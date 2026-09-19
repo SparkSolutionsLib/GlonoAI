@@ -1,0 +1,1051 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GlonoAI Prototype</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+<style>
+
+
+    :root{
+      --green-950:#0A1D15;
+      --green-900:#0F2B1F;
+      --green-800:#163B2A;
+      --green-700:#1F4E38;
+      --green-600:#2B6B4A;
+      --green-100:#E7EFE8;
+      --green-50:#F5F8F5;
+      --white:#FFFFFF;
+      --ink:#12201A;
+      --ink-muted:#5C6C63;
+      --ink-faint:#8C978F;
+      --gold:#C6A15B;
+      --gold-deep:#9C7A3C;
+      --gold-tint:#F4ECDA;
+      --border:#DEE7E0;
+      --border-dark:#26493A;
+      --online:#3EA06B;
+      --shadow:0 1px 2px rgba(10,29,21,0.04), 0 8px 24px rgba(10,29,21,0.06);
+    }
+    *{box-sizing:border-box;}
+    body{margin:0;}
+    .app{
+      width:1440px;height:900px;background:var(--green-50);
+      font-family:'Source Sans 3',system-ui,sans-serif;color:var(--ink);
+      display:flex; overflow:hidden; position:relative;
+    }
+    h1,h2,h3,h4{font-family:'Space Grotesk',system-ui,sans-serif; margin:0; letter-spacing:-0.01em;}
+    a{color:var(--green-700);text-decoration:none;}
+    a:hover{color:var(--gold-deep);}
+    p{margin:0;}
+    ::selection{background:var(--gold-tint);}
+
+    /* ---------- sidebar ---------- */
+    .sidebar{
+      width:236px; min-width:236px; height:900px; background:var(--green-950);
+      display:flex; flex-direction:column; padding:24px 16px; position:relative;
+      border-right:1px solid var(--border-dark);
+    }
+    .brand{display:flex; align-items:center; gap:10px; padding:4px 8px 28px 8px;}
+    .brand-mark{
+      width:34px;height:34px;border-radius:8px;
+      background:linear-gradient(155deg, var(--green-600), var(--green-800));
+      display:flex;align-items:center;justify-content:center;
+      border:1px solid rgba(198,161,91,0.35);
+    }
+    .brand-name{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:18px; color:var(--white); letter-spacing:-0.01em;}
+    .brand-name span{color:var(--gold);}
+    .nav{display:flex; flex-direction:column; gap:2px; margin-top:4px;}
+    .nav-item{
+      display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:8px;
+      font-size:14.5px; font-weight:500; color:#B9C7BE; cursor:default;
+    }
+    .nav-item .ic{width:18px;height:18px;flex:none;}
+    .nav-item.active{background:var(--green-800); color:var(--white); box-shadow: inset 2px 0 0 var(--gold);}
+    .nav-item.active .ic{color:var(--gold);}
+    .nav-item:not(.active) .ic{color:#7E9186;}
+    .sidebar-foot{margin-top:auto; padding-top:16px; border-top:1px solid var(--border-dark);}
+    .sidebar-status{
+      display:flex; align-items:center; gap:8px; padding:10px 12px; border-radius:8px;
+      background:rgba(62,160,107,0.12); border:1px solid rgba(62,160,107,0.3);
+    }
+    .dot{width:7px;height:7px;border-radius:50%;background:var(--online); flex:none;}
+    .dot.pulse{box-shadow:0 0 0 3px rgba(62,160,107,0.18);}
+    .sidebar-status-text{font-size:12px; color:#CFE3D6; line-height:1.3;}
+    .sidebar-status-text b{color:var(--white); display:block; font-size:12.5px; font-weight:600;}
+
+    /* ---------- header ---------- */
+    .main{flex:1; height:900px; display:flex; flex-direction:column; min-width:0;}
+    .topbar{
+      height:72px; min-height:72px; background:var(--white); border-bottom:1px solid var(--border);
+      display:flex; align-items:center; justify-content:space-between; padding:0 32px;
+    }
+    .topbar-left{display:flex; align-items:center; gap:16px;}
+    .crumb{font-size:13.5px; color:var(--ink-muted); font-weight:500;}
+    .crumb b{color:var(--ink);}
+    .status-pill{
+      display:flex; align-items:center; gap:7px; padding:6px 12px 6px 10px; border-radius:999px;
+      background:var(--green-50); border:1px solid var(--border);
+      font-size:12.5px; font-weight:600; color:var(--green-800);
+    }
+    .status-pill.online{background:#EAF6EF; border-color:#CFEBDA;}
+    .topbar-right{display:flex; align-items:center; gap:18px;}
+    .icon-btn{
+      width:36px;height:36px;border-radius:8px; display:flex; align-items:center; justify-content:center;
+      color:var(--ink-muted); border:1px solid transparent; position:relative;
+    }
+    .icon-btn .ic{width:19px;height:19px;}
+    .notif-dot{position:absolute; top:7px; right:7px; width:7px; height:7px; border-radius:50%; background:var(--gold); border:1.5px solid var(--white);}
+    .avatar{
+      width:36px;height:36px;border-radius:50%; background:var(--green-800); color:var(--gold-tint);
+      display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; font-family:'Space Grotesk',sans-serif;
+      border:1px solid var(--border-dark);
+    }
+    .content{flex:1; overflow:hidden; padding:36px 40px; display:flex; flex-direction:column; gap:28px;}
+
+    /* ---------- shared bits ---------- */
+    .ic{stroke:currentColor; fill:none; stroke-width:1.75; stroke-linecap:round; stroke-linejoin:round;}
+    .btn{
+      display:inline-flex; align-items:center; gap:9px; font-family:'Source Sans 3',sans-serif;
+      font-weight:600; font-size:14px; padding:12px 22px; border-radius:8px; border:1px solid transparent;
+      cursor:default;
+    }
+    .btn-primary{background:var(--green-800); color:var(--white);}
+    .btn-primary .ic{color:var(--gold);}
+    .btn-gold{background:var(--gold); color:var(--green-950);}
+    .btn-outline{background:var(--white); color:var(--ink); border-color:var(--border);}
+    .btn-ghost{background:transparent; color:var(--ink-muted); border-color:var(--border);}
+    .btn-sm{padding:8px 14px; font-size:13px;}
+    .card{background:var(--white); border:1px solid var(--border); border-radius:12px;}
+    .tag{
+      display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:700; letter-spacing:0.03em;
+      text-transform:uppercase; padding:4px 9px; border-radius:6px;
+    }
+    .tag-green{background:var(--green-100); color:var(--green-800);}
+    .tag-gold{background:var(--gold-tint); color:var(--gold-deep);}
+    .section-title{font-size:20px; font-weight:700; color:var(--ink);}
+    .section-sub{font-size:14px; color:var(--ink-muted); margin-top:4px;}
+    .scroll-fade{position:absolute; left:0; right:0; bottom:0; height:40px; pointer-events:none;}
+  
+    .view{display:none;}
+    .view.active{display:block;}
+    .clickable{cursor:pointer;}
+    .nav-item{transition:background .15s ease, color .15s ease; cursor:pointer;}
+    .btn, .status-pill, .card.clickable, .icon-btn{cursor:pointer;}
+    .btn{transition:transform .1s ease, box-shadow .15s ease; border:none; font-family:inherit;}
+    .btn:active{transform:scale(0.97);}
+    .card.clickable{transition:box-shadow .15s ease, transform .15s ease;}
+    .card.clickable:hover{box-shadow:var(--shadow); transform:translateY(-2px);}
+    .status-pill{transition:background .2s ease; border:none; font-family:inherit;}
+    .toggle-track{width:52px;height:28px;border-radius:99px;position:relative;flex:none;transition:background .25s ease; border:none; padding:0;}
+    .toggle-knob{position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--white);box-shadow:0 1px 3px rgba(0,0,0,0.25);transition:transform .25s ease;}
+    .chip{display:inline-flex;align-items:center;gap:8px;background:var(--white);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13.5px;color:var(--ink);}
+    .chip.clickable:hover{border-color:var(--gold); background:var(--gold-tint);}
+    .quiz-opt{border:1px solid var(--border); border-radius:8px; padding:10px 14px; font-size:13.5px; cursor:pointer;}
+    .quiz-opt:hover{border-color:var(--green-700);}
+    .quiz-opt.correct{border-color:var(--online); background:#EAF6EF; color:var(--green-800); font-weight:600;}
+    .ghost-link{display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:600; color:var(--green-700); cursor:pointer; background:none; border:none; font-family:inherit;}
+    .ghost-link:hover{color:var(--gold-deep);}
+    button{font-family:inherit;}
+    html,body{margin:0; height:100%;}
+    body{background:var(--green-50);}
+    .app{width:100vw; height:100vh;}
+    .sidebar{height:100vh;}
+    .main{height:100vh;}
+    .content{flex:1; min-height:0;}
+
+
+    /* ---------- auth screen ---------- */
+    .auth-screen{width:100vw;height:100vh;display:flex;font-family:'Source Sans 3',system-ui,sans-serif;color:var(--ink);}
+    .auth-screen.hidden{display:none;}
+    .auth-brand{
+      width:44%; min-width:420px; background:linear-gradient(155deg, var(--green-950), var(--green-800));
+      display:flex; flex-direction:column; justify-content:center; padding:64px 60px; position:relative; overflow:hidden;
+    }
+    .auth-brand h1{font-size:34px; color:var(--white); line-height:1.22; margin-top:22px;}
+    .auth-brand p{font-size:15px; color:#C7D6CC; line-height:1.6; margin-top:16px; max-width:420px;}
+    .auth-feature{display:flex; align-items:flex-start; gap:14px; margin-top:20px;}
+    .auth-feature .fic{width:32px;height:32px;border-radius:9px;background:rgba(198,161,91,0.16);border:1px solid rgba(198,161,91,0.35);display:flex;align-items:center;justify-content:center;flex:none;}
+    .auth-feature-text b{display:block; font-size:14px; color:var(--white); font-weight:600;}
+    .auth-feature-text span{font-size:13px; color:#B9C7BE;}
+    .auth-form-panel{flex:1; display:flex; align-items:center; justify-content:center; background:var(--green-50); padding:40px;}
+    .auth-form-card{width:100%; max-width:420px; background:var(--white); border:1px solid var(--border); border-radius:16px; padding:36px 36px 30px 36px; box-shadow:var(--shadow);}
+    .auth-tabs{display:flex; background:var(--green-50); border-radius:10px; padding:4px; gap:4px;}
+    .auth-tab{flex:1; text-align:center; padding:9px 0; border-radius:8px; font-size:13.5px; font-weight:600; color:var(--ink-muted); cursor:pointer; border:none; background:transparent; font-family:inherit;}
+    .auth-tab.active{background:var(--white); color:var(--green-800); box-shadow:0 1px 2px rgba(10,29,21,0.08);}
+    .role-select{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px;}
+    .role-card{border:1.5px solid var(--border); border-radius:12px; padding:16px 14px; cursor:pointer; text-align:left; transition:border-color .15s ease, background .15s ease;}
+    .role-card .ric{width:30px;height:30px;border-radius:8px;background:var(--green-100);display:flex;align-items:center;justify-content:center;color:var(--green-800); margin-bottom:10px;}
+    .role-card b{display:block; font-size:14px;}
+    .role-card span{font-size:12px; color:var(--ink-muted); line-height:1.4; display:block; margin-top:3px;}
+    .role-card.selected{border-color:var(--green-700); background:var(--green-50);}
+    .role-card.selected .ric{background:var(--green-800); color:var(--gold);}
+    .field{margin-top:16px;}
+    .field label{display:block; font-size:12.5px; font-weight:600; color:var(--ink-muted); margin-bottom:6px;}
+    .field input, .field select{
+      width:100%; padding:11px 14px; border-radius:9px; border:1px solid var(--border); font-size:14px;
+      font-family:inherit; color:var(--ink); background:var(--white); outline:none;
+    }
+    .field input:focus, .field select:focus{border-color:var(--green-700);}
+    .auth-error{margin-top:14px; padding:10px 14px; background:#FBEAEA; border:1px solid #F0C7C7; border-radius:8px; font-size:12.5px; color:#8A2E2E;}
+    .auth-switch-line{text-align:center; font-size:13px; color:var(--ink-muted); margin-top:18px;}
+    .auth-switch-line button{background:none; border:none; color:var(--green-700); font-weight:600; font-size:13px; cursor:pointer; font-family:inherit; padding:0;}
+
+    /* ---------- role badge / nav gating ---------- */
+    .role-badge{display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:700; letter-spacing:0.03em; text-transform:uppercase; padding:4px 9px; border-radius:6px; background:rgba(198,161,91,0.16); color:var(--gold); border:1px solid rgba(198,161,91,0.3);}
+
+    /* ---------- tabs (business / farm tools) ---------- */
+    .tab-bar{display:flex; gap:6px; border-bottom:1px solid var(--border); padding-bottom:0;}
+    .tab{padding:11px 18px; font-size:13.5px; font-weight:600; color:var(--ink-muted); cursor:pointer; border:none; background:transparent; font-family:inherit; border-bottom:2px solid transparent; margin-bottom:-1px;}
+    .tab.active{color:var(--green-800); border-bottom-color:var(--green-700);}
+
+    /* ---------- forms inline (sales / farm log / invoice) ---------- */
+    .inline-form{display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; background:var(--white); border:1px solid var(--border); border-radius:12px; padding:18px 20px;}
+    .inline-form .field{margin-top:0; flex:1; min-width:140px;}
+    .inline-form .field.grow2{flex:2;}
+
+    /* ---------- list rows (sales / farm log / prices) ---------- */
+    .row-item{display:flex; align-items:center; gap:14px; padding:14px 18px; background:var(--white); border:1px solid var(--border); border-radius:10px;}
+    .row-item .ric{width:34px;height:34px;border-radius:9px;background:var(--green-100);color:var(--green-800);display:flex;align-items:center;justify-content:center;flex:none;}
+    .row-item .row-title{font-size:14px; font-weight:600;}
+    .row-item .row-sub{font-size:12.5px; color:var(--ink-muted); margin-top:2px;}
+    .row-item .row-amt{font-size:15px; font-weight:700; font-family:'Space Grotesk',sans-serif; margin-left:auto; flex:none;}
+    .empty-state{display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; padding:40px 20px; color:var(--ink-faint); text-align:center;}
+    .empty-state .eic{width:38px;height:38px;border-radius:10px;background:var(--green-50);display:flex;align-items:center;justify-content:center;color:var(--ink-faint);}
+    .empty-state p{font-size:13px; max-width:260px; line-height:1.5;}
+
+    .price-row{display:flex; align-items:center; gap:14px; padding:13px 18px; border-bottom:1px solid var(--border);}
+    .price-row:last-child{border-bottom:none;}
+    .price-trend{font-size:12px; font-weight:700; padding:3px 8px; border-radius:6px;}
+    .price-trend.up{background:#EAF6EF; color:var(--online);}
+    .price-trend.down{background:#FBEAEA; color:#B94545;}
+
+    .quick-action{display:flex; align-items:center; gap:14px; padding:16px 18px; background:var(--white); border:1px solid var(--border); border-radius:12px; cursor:pointer; transition:box-shadow .15s ease, transform .15s ease;}
+    .quick-action:hover{box-shadow:var(--shadow); transform:translateY(-2px);}
+    .quick-action .qic{width:38px;height:38px;border-radius:9px;background:var(--green-100);color:var(--green-800);display:flex;align-items:center;justify-content:center;flex:none;}
+    .quick-action b{font-size:13.5px; display:block;}
+    .quick-action span{font-size:12px; color:var(--ink-muted);}
+
+</style>
+</head>
+<body>
+<div id="authScreen" class="auth-screen">
+  <div class="auth-brand">
+    <div class="brand" style="padding:0;">
+      <div class="brand-mark" style="width:40px;height:40px;">
+        <svg class="ic" viewBox="0 0 24 24" style="width:19px;height:19px;color:var(--gold)"><path d="M5 3.5v17.4" stroke-width="1.6"/><path d="M5 4.5h13l-3 3.6 3 3.6H5z"/></svg>
+      </div>
+      <div class="brand-name" style="font-size:21px;">Glono<span>AI</span></div>
+    </div>
+    <h1>Knowledge and tools for Liberia&rsquo;s businesses and farms.</h1>
+    <p>One offline-first assistant &mdash; with the everyday tools business owners and farmers actually need, built in.</p>
+    <div class="auth-feature">
+      <div class="fic"><svg class="ic" viewBox="0 0 24 24" style="width:15px;height:15px;color:var(--gold)"><path d="M4 5.5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H10l-4.5 4v-4H4a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1z"/><path d="M8 10h8M8 13.5h5" stroke-width="1.5"/></svg></div>
+      <div class="auth-feature-text"><b>Ask anything, anytime</b><span>Local knowledge that works with or without a connection.</span></div>
+    </div>
+    <div class="auth-feature">
+      <div class="fic"><svg class="ic" viewBox="0 0 24 24" style="width:15px;height:15px;color:var(--gold)"><path d="M12 3.3 2.8 8l9.2 4.7L21.2 8z"/><path d="M2.8 12.2 12 17l9.2-4.8"/><path d="M2.8 16.4 12 21.2l9.2-4.8"/></svg></div>
+      <div class="auth-feature-text"><b>Built for your work</b><span>Sales &amp; invoices for business, farm records &amp; prices for agriculture.</span></div>
+    </div>
+    <div class="auth-feature">
+      <div class="fic"><svg class="ic" viewBox="0 0 24 24" style="width:15px;height:15px;color:var(--gold)"><circle cx="12" cy="12" r="9.2"/><path d="M12 6.8V12l3.6 2.1"/></svg></div>
+      <div class="auth-feature-text"><b>Ready when you are</b><span>No internet needed to keep working, tracking, or learning.</span></div>
+    </div>
+  </div>
+  <div class="auth-form-panel">
+    <div class="auth-form-card">
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="authTabLogin" onclick="setAuthMode('login')">Log In</button>
+        <button class="auth-tab" id="authTabSignup" onclick="setAuthMode('signup')">Create Account</button>
+      </div>
+
+      <div class="field" style="margin-top:20px;">
+        <label>I am a&hellip;</label>
+        <div class="role-select">
+          <div class="role-card selected" id="roleCardBusiness" onclick="selectRole('business')">
+            <div class="ric"><svg class="ic" viewBox="0 0 24 24" style="width:15px;height:15px;"><path d="M12 3.3 2.8 8l9.2 4.7L21.2 8z"/><path d="M2.8 12.2 12 17l9.2-4.8"/><path d="M2.8 16.4 12 21.2l9.2-4.8"/></svg></div>
+            <b>Business</b>
+            <span>Shop owners, traders &amp; service providers</span>
+          </div>
+          <div class="role-card" id="roleCardAgriculture" onclick="selectRole('agriculture')">
+            <div class="ric"><svg class="ic" viewBox="0 0 24 24" style="width:15px;height:15px;"><path d="M12 3.5c3 3 4.5 6 4.5 8.7A4.5 4.5 0 0 1 12 17a4.5 4.5 0 0 1-4.5-4.8C7.5 9.5 9 6.5 12 3.5z"/><path d="M12 17v4.2"/></svg></div>
+            <b>Agriculture</b>
+            <span>Farmers &amp; growers</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="field" id="signupOrgField" style="display:none;">
+        <label id="signupOrgLabel">Business Name</label>
+        <input id="authOrgName" type="text" placeholder="e.g. Sarah's Provision Shop"/>
+      </div>
+
+      <div class="field">
+        <label>Full Name</label>
+        <input id="authName" type="text" placeholder="e.g. Sarah Johnson"/>
+      </div>
+
+      <div class="field">
+        <label>Phone Number</label>
+        <input id="authPhone" type="text" placeholder="e.g. 077 000 0000"/>
+      </div>
+
+      <div class="field">
+        <label>Password</label>
+        <input id="authPassword" type="password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"/>
+      </div>
+
+      <div id="authError" class="auth-error" style="display:none;"></div>
+
+      <button class="btn btn-primary" style="width:100%; justify-content:center; margin-top:20px;" onclick="submitAuth()" id="authSubmitBtn">
+        <svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px;color:var(--gold)"><path d="M9 5l7 7-7 7"/></svg>
+        <span id="authSubmitLabel">Log In</span>
+      </button>
+
+      <p class="auth-switch-line" id="authSwitchLine">New to GlonoAI? <button onclick="setAuthMode('signup')">Create an account</button></p>
+    </div>
+  </div>
+</div>
+
+<div class="app" id="appShell" style="border-radius:14px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.5); display:none;"><div class="sidebar"><div class="brand"><div class="brand-mark"><svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px;color:var(--gold)"><path d="M5 3.5v17.4" stroke-width="1.6"/><path d="M5 4.5h13l-3 3.6 3 3.6H5z"/></svg></div><div class="brand-name">Glono<span>AI</span></div></div><div class="nav">
+<div class="nav-item" data-nav="home" onclick="goTo('home')"><svg class="ic" viewBox="0 0 24 24" ><path d="M3.5 11.2 12 4l8.5 7.2"/><path d="M5.5 9.8V19a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1V9.8"/><path d="M9.5 20v-6h5v6"/></svg><span>Home</span></div>
+<div class="nav-item" data-nav="chat" onclick="goTo('chat')"><svg class="ic" viewBox="0 0 24 24" ><path d="M4 5.5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H10l-4.5 4v-4H4a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1z"/><path d="M8 10h8M8 13.5h5" stroke-width="1.5"/></svg><span>Ask GlonoAI</span></div>
+<div class="nav-item" data-nav="bizTools" data-role="business" onclick="goTo('bizTools')"><svg class="ic" viewBox="0 0 24 24" ><rect x="3.5" y="8" width="17" height="12" rx="1.5"/><path d="M8 8V6.3A2.3 2.3 0 0 1 10.3 4h3.4A2.3 2.3 0 0 1 16 6.3V8"/><path d="M3.5 13h17"/></svg><span>My Business</span></div>
+<div class="nav-item" data-nav="farmTools" data-role="agriculture" onclick="goTo('farmTools')"><svg class="ic" viewBox="0 0 24 24" ><path d="M12 3.5c3 3 4.5 6 4.5 8.7A4.5 4.5 0 0 1 12 17a4.5 4.5 0 0 1-4.5-4.8C7.5 9.5 9 6.5 12 3.5z"/><path d="M12 17v4.2"/></svg><span>My Farm</span></div>
+<div class="nav-item" data-nav="library" onclick="goTo('library')"><svg class="ic" viewBox="0 0 24 24" ><path d="M6 4h13v15.2a1 1 0 0 1-1 1H6z"/><path d="M6 4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2"/><path d="M9.5 4v16"/></svg><span>Knowledge Library</span></div>
+<div class="nav-item" data-nav="saved" onclick="goTo('saved')"><svg class="ic" viewBox="0 0 24 24" ><path d="M6.5 3.5h11a1 1 0 0 1 1 1V21l-6.5-4.3L5.5 21V4.5a1 1 0 0 1 1-1z"/></svg><span>Saved Answers</span></div>
+<div class="nav-item" data-nav="learning" onclick="goTo('learning')"><svg class="ic" viewBox="0 0 24 24" ><path d="M2 8.2 12 3.5l10 4.7-10 4.7-10-4.7z"/><path d="M6.2 10.4v4.8c0 1.7 2.8 3.3 5.8 3.3s5.8-1.6 5.8-3.3v-4.8"/><path d="M20.5 9v6" stroke-width="1.5"/></svg><span>Learning</span></div>
+<div class="nav-item" data-nav="admin" onclick="goTo('admin')"><svg class="ic" viewBox="0 0 24 24" ><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8.2" stroke-dasharray="2.6 3.4"/></svg><span>Settings</span></div>
+</div><div class="sidebar-foot"><div class="sidebar-status"><span class="dot pulse"></span><div class="sidebar-status-text"><b id="sidebarStatus">Online — Syncing</b>Core assistant active</div></div><div style="margin-top:14px; display:flex; align-items:center; gap:8px;"><span class="role-badge" id="sidebarRoleBadge">Business</span><span style="font-size:12px; color:#8C978F;" id="sidebarOrgName">&nbsp;</span></div></div></div><div class="main"><div class="topbar"><div class="topbar-left"><div class="crumb"><b id="crumbBold">Home</b> <span id="crumbRest">· Overview</span></div></div><div class="topbar-right"><button class="status-pill" id="topbarStatusPill" onclick="goTo('connectivity')" style="background:var(--green-50); border:1px solid var(--border); color:var(--green-800);"><span class="dot pulse"></span><span class="js-status-text">Online — Syncing</span></button><div class="icon-btn"><svg class="ic" viewBox="0 0 24 24" ><circle cx="10.8" cy="10.8" r="6.3"/><path d="M15.5 15.5 20 20"/></svg></div><div class="icon-btn"><svg class="ic" viewBox="0 0 24 24" ><path d="M6.3 9.6a5.7 5.7 0 0 1 11.4 0v4.6l2 3.1H4.3l2-3.1z"/><path d="M10.2 20a1.9 1.9 0 0 0 3.6 0"/></svg><span class="notif-dot"></span></div><div class="avatar clickable" id="topbarAvatar" onclick="goTo('admin')">JA</div></div></div><div class="content" style="overflow:auto;">
+
+<div class="view active" id="view-home"><div style="display:flex;flex-direction:column;gap:28px;">
+
+<div style="display:flex; align-items:center; justify-content:space-between;">
+  <div>
+    <div style="font-size:12.5px; color:var(--ink-muted); font-weight:600;">Welcome back</div>
+    <div style="font-size:21px; font-weight:700; font-family:'Space Grotesk',sans-serif;" id="homeGreetingName">&mdash;</div>
+  </div>
+  <span class="role-badge" id="homeRoleBadge" style="background:var(--green-100); color:var(--green-800); border-color:var(--border);">Business</span>
+</div>
+
+<div style="background:linear-gradient(135deg, var(--green-900), var(--green-950)); border-radius:16px; padding:44px 48px; display:flex; align-items:center; justify-content:space-between; gap:40px; position:relative; overflow:hidden; border:1px solid var(--border-dark);"><div style="max-width:560px; position:relative; z-index:1;"><div class="tag tag-gold" style="margin-bottom:16px;">Offline-first AI</div><h1 style="font-size:36px; color:var(--white); line-height:1.18;">Knowledge, even when<br/>you&rsquo;re offline.</h1><p style="margin-top:14px; font-size:15.5px; color:#C7D6CC; line-height:1.55; max-width:460px;">Ask questions, track your work, and get useful answers without depending on an internet connection.</p><div style="display:flex; align-items:center; gap:16px; margin-top:26px;"><button class="btn btn-gold clickable" onclick="goTo('chat')"><svg class="ic" viewBox="0 0 24 24" style="width:17px;height:17px;color:var(--green-950)"><path d="M4 5.5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H10l-4.5 4v-4H4a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1z"/><path d="M8 10h8M8 13.5h5" stroke-width="1.5"/></svg>Ask GlonoAI</button><button class="status-pill clickable js-status-pill" onclick="goTo('connectivity')" style="background:rgba(62,160,107,0.14); border:1px solid rgba(62,160,107,0.35); color:#CFE3D6;"><span class="dot pulse"></span><span class="js-status-text">Online — Syncing</span></button></div></div><svg viewBox="0 0 260 200" style="width:260px;height:200px;flex:none;"><g fill="none" stroke="rgba(198,161,91,0.55)" stroke-width="1.2"><circle cx="150" cy="100" r="34" stroke="rgba(198,161,91,0.9)"/><circle cx="150" cy="100" r="66" stroke-dasharray="3 5"/><circle cx="150" cy="100" r="94" stroke-dasharray="2 6" stroke="rgba(231,239,232,0.25)"/></g><g stroke="rgba(231,239,232,0.4)" stroke-width="1.2"><line x1="150" y1="100" x2="46" y2="58"/><line x1="150" y1="100" x2="34" y2="128"/><line x1="150" y1="100" x2="70" y2="176"/><line x1="150" y1="100" x2="222" y2="40"/><line x1="150" y1="100" x2="238" y2="150"/></g><circle cx="150" cy="100" r="6" fill="#C6A15B"/><circle cx="46" cy="58" r="4" fill="#E7EFE8"/><circle cx="34" cy="128" r="4" fill="#E7EFE8"/><circle cx="70" cy="176" r="4" fill="#E7EFE8"/><circle cx="222" cy="40" r="4" fill="#E7EFE8"/><circle cx="238" cy="150" r="4" fill="#E7EFE8"/></svg></div>
+
+<!-- BUSINESS DASHBOARD -->
+<div id="dashBusiness" style="display:flex; flex-direction:column; gap:24px;">
+  <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:20px;" id="bizStatRow"></div>
+  <div>
+    <h3 style="font-size:16px; margin-bottom:14px;">Quick actions</h3>
+    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px;">
+      <div class="quick-action" onclick="goToBizTab('sales')"><div class="qic"><svg class="ic" viewBox="0 0 24 24" style="width:17px;height:17px;"><path d="M4 6h16M4 12h16M4 18h10"/></svg></div><div><b>Log a Sale</b><span>Record money coming in</span></div></div>
+      <div class="quick-action" onclick="goToBizTab('invoices')"><div class="qic"><svg class="ic" viewBox="0 0 24 24" style="width:17px;height:17px;"><path d="M6.5 3.5h11a1 1 0 0 1 1 1V21l-2.5-2-2.5 2-2.5-2-2.5 2-2.5-2V4.5a1 1 0 0 1 1-1z"/></svg></div><div><b>Create Invoice</b><span>Bill a customer</span></div></div>
+      <div class="quick-action" onclick="goTo('chat')"><div class="qic"><svg class="ic" viewBox="0 0 24 24" style="width:17px;height:17px;"><path d="M4 5.5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H10l-4.5 4v-4H4a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1z"/></svg></div><div><b>Ask GlonoAI</b><span>Pricing, loans, marketing &amp; more</span></div></div>
+    </div>
+  </div>
+  <div style="display:grid; grid-template-columns:1.3fr 1fr; gap:20px; align-items:start;">
+    <div>
+      <h3 style="font-size:16px; margin-bottom:14px;">Recent activity</h3>
+      <div id="bizRecentList" style="display:flex; flex-direction:column; gap:10px;"></div>
+    </div>
+    <div>
+      <h3 style="font-size:16px; margin-bottom:14px;">Ask about your business</h3>
+      <div id="bizSuggestList" style="display:flex; flex-direction:column; gap:10px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- AGRICULTURE DASHBOARD -->
+<div id="dashAgriculture" style="display:none; flex-direction:column; gap:24px;">
+  <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:20px;" id="farmStatRow"></div>
+  <div>
+    <h3 style="font-size:16px; margin-bottom:14px;">Quick actions</h3>
+    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px;">
+      <div class="quick-action" onclick="goToFarmTab('log')"><div class="qic"><svg class="ic" viewBox="0 0 24 24" style="width:17px;height:17px;"><path d="M12 3.5c3 3 4.5 6 4.5 8.7A4.5 4.5 0 0 1 12 17a4.5 4.5 0 0 1-4.5-4.8C7.5 9.5 9 6.5 12 3.5z"/><path d="M12 17v4.2"/></svg></div><div><b>Log Farm Activity</b><span>Planting, weeding, harvest</span></div></div>
+      <div class="quick-action" onclick="goToFarmTab('prices')"><div class="qic"><svg class="ic" viewBox="0 0 24 24" style="width:17px;height:17px;"><path d="M5 20V13"/><path d="M12 20V8.5"/><path d="M19 20v-6.5"/></svg></div><div><b>Market Prices</b><span>Check reference prices</span></div></div>
+      <div class="quick-action" onclick="goTo('chat')"><div class="qic"><svg class="ic" viewBox="0 0 24 24" style="width:17px;height:17px;"><path d="M4 5.5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H10l-4.5 4v-4H4a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1z"/></svg></div><div><b>Ask GlonoAI</b><span>Pests, soil, storage &amp; more</span></div></div>
+    </div>
+  </div>
+  <div style="display:grid; grid-template-columns:1.3fr 1fr; gap:20px; align-items:start;">
+    <div>
+      <h3 style="font-size:16px; margin-bottom:14px;">Recent farm activity</h3>
+      <div id="farmRecentList" style="display:flex; flex-direction:column; gap:10px;"></div>
+    </div>
+    <div>
+      <h3 style="font-size:16px; margin-bottom:14px;">Ask about your farm</h3>
+      <div id="farmSuggestList" style="display:flex; flex-direction:column; gap:10px;"></div>
+    </div>
+  </div>
+</div>
+
+</div></div>
+
+<div class="view" id="view-chat"><div style="display:flex; flex-direction:column; height:100%; overflow:hidden; padding-bottom:12px;"><div id="chatPrompt" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px; max-width:640px; margin:0 auto; text-align:center;"><div style="width:52px;height:52px;border-radius:14px;background:var(--green-950);display:flex;align-items:center;justify-content:center;"><svg class="ic" viewBox="0 0 24 24" style="width:22px;height:22px;color:var(--gold)"><path d="M5 3.5v17.4" stroke-width="1.6"/><path d="M5 4.5h13l-3 3.6 3 3.6H5z"/></svg></div><div><h2 style="font-size:20px;">Ask GlonoAI anything</h2><p style="font-size:14px;color:var(--ink-muted);margin-top:8px;line-height:1.5;">Try a suggested question, or type your own — GlonoAI answers from Liberian and pan-African knowledge stored on this device.</p></div><div id="chatSuggestChips" style="display:flex; flex-direction:column; gap:10px; width:100%;"></div></div><div id="chatAnswer" style="display:none; flex:1; flex-direction:column; gap:16px; max-width:900px; width:100%; margin:0 auto; overflow:auto;"><div style="display:flex; justify-content:flex-end;"><button class="ghost-link" onclick="resetChat()">New conversation</button></div><div id="chatThread" style="display:flex; flex-direction:column; gap:20px;"></div></div><div style="max-width:900px; width:100%; margin:14px auto 0 auto;"><div style="display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--ink-faint); margin-bottom:10px; justify-content:center;"><svg class="ic" viewBox="0 0 24 24" style="width:13px;height:13px;"><path d="M2.5 4 21.5 21" stroke-width="1.9"/><path d="M4.5 9.8a11 11 0 0 1 5.6-3" /><path d="M14.2 6.9a11 11 0 0 1 5.3 2.9"/><path d="M7.6 13.2a6.7 6.7 0 0 1 3.4-1.9"/><path d="M13.7 12.2a6.7 6.7 0 0 1 3 1.4"/><path d="M10.6 16.4a2.6 2.6 0 0 1 2.8 0"/><circle cx="12" cy="19" r="0.9" fill="currentColor" stroke="none"/></svg>GlonoAI is running offline. Your questions are processed locally.</div><div style="display:flex; align-items:center; gap:12px; background:var(--white); border:1px solid var(--border); border-radius:12px; padding:8px 8px 8px 18px;"><input id="chatInputField" type="text" placeholder="Ask about Liberia, Ghana, Kenya, business, government…" style="flex:1; border:none; outline:none; font-size:14px; color:var(--ink); background:transparent; font-family:inherit;" onkeydown="if(event.key==='Enter'){submitTyped();}" /><button class="btn-gold clickable" style="width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex:none;" onclick="submitTyped()"><svg class="ic" viewBox="0 0 24 24" style="width:17px;height:17px;color:var(--green-950); transform:rotate(-90deg);"><path d="M9 5l7 7-7 7"/></svg></button></div></div></div></div>
+<div class="view" id="view-bizTools"><div style="display:flex;flex-direction:column;gap:22px;">
+<div><h2 class="section-title">My Business</h2><p class="section-sub">Track sales, send invoices, and see how your business is doing &mdash; all stored on this device.</p></div>
+
+<div class="tab-bar">
+  <button class="tab active" id="bizTab-sales" onclick="setBizTab('sales')">Sales</button>
+  <button class="tab" id="bizTab-invoices" onclick="setBizTab('invoices')">Invoices</button>
+  <button class="tab" id="bizTab-overview" onclick="setBizTab('overview')">Overview</button>
+</div>
+
+<div id="bizPanel-sales" style="display:flex; flex-direction:column; gap:18px;">
+  <div class="inline-form">
+    <div class="field grow2"><label>Item / Service</label><input id="saleItem" type="text" placeholder="e.g. Bag of rice, Hair styling"/></div>
+    <div class="field"><label>Amount (USD)</label><input id="saleAmount" type="number" min="0" step="0.01" placeholder="0.00"/></div>
+    <button class="btn btn-primary btn-sm" onclick="addSale()"><svg class="ic" viewBox="0 0 24 24" style="width:14px;height:14px;color:var(--gold)"><path d="M12 5v14M5 12h14"/></svg>Add Sale</button>
+  </div>
+  <div id="bizSalesList" style="display:flex; flex-direction:column; gap:10px;"></div>
+</div>
+
+<div id="bizPanel-invoices" style="display:none; flex-direction:column; gap:18px;">
+  <div class="inline-form">
+    <div class="field grow2"><label>Customer Name</label><input id="invCustomer" type="text" placeholder="e.g. James Freeman"/></div>
+    <div class="field grow2"><label>Item / Description</label><input id="invItem" type="text" placeholder="e.g. 3 bags of cement"/></div>
+    <div class="field"><label>Amount (USD)</label><input id="invAmount" type="number" min="0" step="0.01" placeholder="0.00"/></div>
+    <button class="btn btn-primary btn-sm" onclick="addInvoice()"><svg class="ic" viewBox="0 0 24 24" style="width:14px;height:14px;color:var(--gold)"><path d="M12 5v14M5 12h14"/></svg>Create Invoice</button>
+  </div>
+  <div id="bizInvoicesList" style="display:flex; flex-direction:column; gap:12px;"></div>
+</div>
+
+<div id="bizPanel-overview" style="display:none; flex-direction:column; gap:20px;">
+  <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:20px;" id="bizOverviewStatRow"></div>
+  <div>
+    <h3 style="font-size:16px; margin-bottom:14px;">Recent transactions</h3>
+    <div id="bizOverviewList" style="display:flex; flex-direction:column; gap:10px;"></div>
+  </div>
+</div>
+
+</div></div>
+
+<div class="view" id="view-farmTools"><div style="display:flex;flex-direction:column;gap:22px;">
+<div><h2 class="section-title">My Farm</h2><p class="section-sub">Keep farm records, check reference prices, and follow a general planting calendar &mdash; all stored on this device.</p></div>
+
+<div class="tab-bar">
+  <button class="tab active" id="farmTab-log" onclick="setFarmTab('log')">Farm Log</button>
+  <button class="tab" id="farmTab-prices" onclick="setFarmTab('prices')">Market Prices</button>
+  <button class="tab" id="farmTab-calendar" onclick="setFarmTab('calendar')">Crop Calendar</button>
+</div>
+
+<div id="farmPanel-log" style="display:flex; flex-direction:column; gap:18px;">
+  <div class="inline-form">
+    <div class="field">
+      <label>Crop</label>
+      <select id="farmCrop">
+        <option>Rice</option><option>Cassava</option><option>Rubber</option><option>Cocoa</option><option>Palm Oil</option><option>Vegetables</option><option>Other</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Activity</label>
+      <select id="farmActivity">
+        <option>Planted</option><option>Weeded</option><option>Fertilized</option><option>Treated for pests</option><option>Harvested</option>
+      </select>
+    </div>
+    <div class="field grow2"><label>Quantity / Note</label><input id="farmNote" type="text" placeholder="e.g. 2 acres, or 6 bags harvested"/></div>
+    <button class="btn btn-primary btn-sm" onclick="addFarmLog()"><svg class="ic" viewBox="0 0 24 24" style="width:14px;height:14px;color:var(--gold)"><path d="M12 5v14M5 12h14"/></svg>Add Entry</button>
+  </div>
+  <div id="farmLogList" style="display:flex; flex-direction:column; gap:10px;"></div>
+</div>
+
+<div id="farmPanel-prices" style="display:none; flex-direction:column; gap:16px;">
+  <div class="card" style="padding:14px 18px; display:flex; align-items:center; gap:12px; background:var(--gold-tint); border-color:#EADFC4;">
+    <svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px;color:var(--gold-deep); flex:none;"><path d="M12 8.5v5"/><circle cx="12" cy="16.3" r="0.9" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="9.2"/></svg>
+    <span style="font-size:12.5px; color:var(--gold-deep);">Sample reference prices for this demo &mdash; always confirm current prices at your local market.</span>
+  </div>
+  <div class="card" style="padding:6px 18px;">
+    <div class="price-row"><div style="flex:1; font-size:13.5px; font-weight:600;">Cassava</div><div style="width:110px; font-size:12.5px; color:var(--ink-muted);">per 100kg bag</div><div style="width:90px; font-size:14px; font-weight:700; font-family:'Space Grotesk',sans-serif;">L$3,200</div><span class="price-trend up">&uarr; 4%</span></div>
+    <div class="price-row"><div style="flex:1; font-size:13.5px; font-weight:600;">Rice (local)</div><div style="width:110px; font-size:12.5px; color:var(--ink-muted);">per 50kg bag</div><div style="width:90px; font-size:14px; font-weight:700; font-family:'Space Grotesk',sans-serif;">L$4,850</div><span class="price-trend up">&uarr; 2%</span></div>
+    <div class="price-row"><div style="flex:1; font-size:13.5px; font-weight:600;">Rubber (raw)</div><div style="width:110px; font-size:12.5px; color:var(--ink-muted);">per kg</div><div style="width:90px; font-size:14px; font-weight:700; font-family:'Space Grotesk',sans-serif;">L$95</div><span class="price-trend down">&darr; 1%</span></div>
+    <div class="price-row"><div style="flex:1; font-size:13.5px; font-weight:600;">Cocoa (dry beans)</div><div style="width:110px; font-size:12.5px; color:var(--ink-muted);">per kg</div><div style="width:90px; font-size:14px; font-weight:700; font-family:'Space Grotesk',sans-serif;">L$210</div><span class="price-trend up">&uarr; 6%</span></div>
+    <div class="price-row"><div style="flex:1; font-size:13.5px; font-weight:600;">Palm Oil</div><div style="width:110px; font-size:12.5px; color:var(--ink-muted);">per gallon</div><div style="width:90px; font-size:14px; font-weight:700; font-family:'Space Grotesk',sans-serif;">L$1,450</div><span class="price-trend up">&uarr; 3%</span></div>
+    <div class="price-row"><div style="flex:1; font-size:13.5px; font-weight:600;">Pepper (fresh)</div><div style="width:110px; font-size:12.5px; color:var(--ink-muted);">per kg</div><div style="width:90px; font-size:14px; font-weight:700; font-family:'Space Grotesk',sans-serif;">L$650</div><span class="price-trend down">&darr; 2%</span></div>
+  </div>
+</div>
+
+<div id="farmPanel-calendar" style="display:none; flex-direction:column; gap:16px;">
+  <p style="font-size:13px; color:var(--ink-muted); line-height:1.5;">A general guide to Liberia&rsquo;s two main seasons. Actual timing varies by crop, variety, and region &mdash; use this alongside local extension advice.</p>
+  <div style="display:flex; flex-direction:column; gap:10px;">
+    <div class="row-item"><div class="ric"><svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px;"><path d="M4.5 4.5v5.5h5.5"/><path d="M5 14.5a7.5 7.5 0 0 0 13.2 3.3"/></svg></div><div><div class="row-title">Land preparation</div><div class="row-sub">Dry season, roughly December &ndash; March</div></div></div>
+    <div class="row-item"><div class="ric"><svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px;"><path d="M12 3.5c3 3 4.5 6 4.5 8.7A4.5 4.5 0 0 1 12 17a4.5 4.5 0 0 1-4.5-4.8C7.5 9.5 9 6.5 12 3.5z"/></svg></div><div><div class="row-title">Planting</div><div class="row-sub">Start of rainy season, roughly April &ndash; June</div></div></div>
+    <div class="row-item"><div class="ric"><svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px;"><path d="M4 6h16M4 12h16M4 18h10"/></svg></div><div><div class="row-title">Weeding &amp; maintenance</div><div class="row-sub">Through the rainy season, roughly June &ndash; August</div></div></div>
+    <div class="row-item"><div class="ric"><svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px;"><path d="M4.5 12.5 9.5 17.5 19.5 6.5" stroke-width="2"/></svg></div><div><div class="row-title">Harvest</div><div class="row-sub">End of rainy season, roughly September &ndash; November</div></div></div>
+    <div class="row-item"><div class="ric"><svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px;"><rect x="5.5" y="3.5" width="13" height="17" rx="1"/><path d="M9 7.5h1.4M13.6 7.5H15M9 11.5h1.4M13.6 11.5H15"/></svg></div><div><div class="row-title">Storage &amp; sale</div><div class="row-sub">Dry season, roughly December &ndash; February</div></div></div>
+  </div>
+</div>
+
+</div></div>
+
+<div class="view" id="view-library"><div style="display:flex;flex-direction:column;gap:24px;"><div><h2 class="section-title">Knowledge Library</h2><p class="section-sub">Curated, locally-stored knowledge — available with or without a connection.</p></div><div class="card" style="padding:14px 18px; display:flex; align-items:center; gap:12px; background:var(--green-50); border-color:var(--border);" id="libRecommendedBanner"><svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px;color:var(--green-800); flex:none;"><path d="M12 3.3 2.8 8l9.2 4.7L21.2 8z"/><path d="M2.8 12.2 12 17l9.2-4.8"/></svg><span style="font-size:12.5px; color:var(--green-800);" id="libRecommendedText">Recommended for you: Business &amp; Entrepreneurship</span></div><div style="display:flex; gap:14px; align-items:center;"><div style="flex:1; display:flex; align-items:center; gap:10px; background:var(--white); border:1px solid var(--border); border-radius:10px; padding:12px 16px;"><svg class="ic" viewBox="0 0 24 24" style="width:17px;height:17px;color:var(--ink-faint);"><circle cx="10.8" cy="10.8" r="6.3"/><path d="M15.5 15.5 20 20"/></svg><span style="font-size:14px;color:var(--ink-faint);">Search the knowledge library…</span></div><div class="btn btn-outline btn-sm">All categories<svg class="ic" viewBox="0 0 24 24" style="width:14px;height:14px;transform:rotate(90deg);"><path d="M9 5l7 7-7 7"/></svg></div></div><div style="display:grid; grid-template-columns:repeat(3,1fr); gap:20px;"><div class="card clickable" style="padding:24px; display:flex; flex-direction:column; gap:14px;"><div style="display:flex; align-items:center; justify-content:space-between;"><div style="width:42px;height:42px;border-radius:10px;background:var(--green-100);display:flex;align-items:center;justify-content:center;"><span style="font-size:18px;">🇱🇷</span></div><span class="tag tag-green">128 resources</span></div><div><h3 style="font-size:16.5px;">Liberia History & Heritage</h3><p style="font-size:13.5px;color:var(--ink-muted);margin-top:6px;line-height:1.5;">Timelines, key figures, and founding documents.</p></div><div style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--green-700);margin-top:auto;">Browse category<svg class="ic" viewBox="0 0 24 24" style="width:14px;height:14px;"><path d="M9 5l7 7-7 7"/></svg></div></div><div class="card clickable" style="padding:24px; display:flex; flex-direction:column; gap:14px;"><div style="display:flex; align-items:center; justify-content:space-between;"><div style="width:42px;height:42px;border-radius:10px;background:var(--green-100);display:flex;align-items:center;justify-content:center;"><svg class="ic" viewBox="0 0 24 24" style="width:19px;height:19px;color:var(--green-800)"><path d="M2 8.2 12 3.5l10 4.7-10 4.7-10-4.7z"/><path d="M6.2 10.4v4.8c0 1.7 2.8 3.3 5.8 3.3s5.8-1.6 5.8-3.3v-4.8"/><path d="M20.5 9v6" stroke-width="1.5"/></svg></div><span class="tag tag-green">214 resources</span></div><div><h3 style="font-size:16.5px;">Education</h3><p style="font-size:13.5px;color:var(--ink-muted);margin-top:6px;line-height:1.5;">Curricula, study guides, and exam preparation.</p></div><div style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--green-700);margin-top:auto;">Browse category<svg class="ic" viewBox="0 0 24 24" style="width:14px;height:14px;"><path d="M9 5l7 7-7 7"/></svg></div></div><div class="card clickable" style="padding:24px; display:flex; flex-direction:column; gap:14px;"><div style="display:flex; align-items:center; justify-content:space-between;"><div style="width:42px;height:42px;border-radius:10px;background:var(--green-100);display:flex;align-items:center;justify-content:center;"><svg class="ic" viewBox="0 0 24 24" style="width:19px;height:19px;color:var(--green-800)"><rect x="5.5" y="3.5" width="13" height="17" rx="1"/><path d="M9 7.5h1.4M13.6 7.5H15M9 11.5h1.4M13.6 11.5H15M9 15.5h1.4M13.6 15.5H15"/><path d="M10.5 20.5v-4h3v4"/></svg></div><span class="tag tag-green">96 resources</span></div><div><h3 style="font-size:16.5px;">Government & Public Information</h3><p style="font-size:13.5px;color:var(--ink-muted);margin-top:6px;line-height:1.5;">Laws, civic processes, and regional bodies like ECOWAS and the AU.</p></div><div style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--green-700);margin-top:auto;">Browse category<svg class="ic" viewBox="0 0 24 24" style="width:14px;height:14px;"><path d="M9 5l7 7-7 7"/></svg></div></div><div class="card clickable" style="padding:24px; display:flex; flex-direction:column; gap:14px;"><div style="display:flex; align-items:center; justify-content:space-between;"><div style="width:42px;height:42px;border-radius:10px;background:var(--green-100);display:flex;align-items:center;justify-content:center;"><svg class="ic" viewBox="0 0 24 24" style="width:19px;height:19px;color:var(--green-800)"><path d="M12 3.3 2.8 8l9.2 4.7L21.2 8z"/><path d="M2.8 12.2 12 17l9.2-4.8"/><path d="M2.8 16.4 12 21.2l9.2-4.8"/></svg></div><span class="tag tag-green">152 resources</span></div><div><h3 style="font-size:16.5px;">Business & Entrepreneurship</h3><p style="font-size:13.5px;color:var(--ink-muted);margin-top:6px;line-height:1.5;">Startup guides, finance basics, and market info from Liberia to Kenya.</p></div><div style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--green-700);margin-top:auto;">Browse category<svg class="ic" viewBox="0 0 24 24" style="width:14px;height:14px;"><path d="M9 5l7 7-7 7"/></svg></div></div><div class="card clickable" style="padding:24px; display:flex; flex-direction:column; gap:14px;"><div style="display:flex; align-items:center; justify-content:space-between;"><div style="width:42px;height:42px;border-radius:10px;background:var(--green-100);display:flex;align-items:center;justify-content:center;"><svg class="ic" viewBox="0 0 24 24" style="width:19px;height:19px;color:var(--green-800)"><path d="M12 3.5c3 3 4.5 6 4.5 8.7A4.5 4.5 0 0 1 12 17a4.5 4.5 0 0 1-4.5-4.8C7.5 9.5 9 6.5 12 3.5z"/><path d="M12 17v4.2"/></svg></div><span class="tag tag-green">118 resources</span></div><div><h3 style="font-size:16.5px;">Agriculture &amp; Farming</h3><p style="font-size:13.5px;color:var(--ink-muted);margin-top:6px;line-height:1.5;">Crop guides, market prices, and farm management basics.</p></div><div style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--green-700);margin-top:auto;">Browse category<svg class="ic" viewBox="0 0 24 24" style="width:14px;height:14px;"><path d="M9 5l7 7-7 7"/></svg></div></div><div class="card clickable" style="padding:24px; display:flex; flex-direction:column; gap:14px;"><div style="display:flex; align-items:center; justify-content:space-between;"><div style="width:42px;height:42px;border-radius:10px;background:var(--green-100);display:flex;align-items:center;justify-content:center;"><svg class="ic" viewBox="0 0 24 24" style="width:19px;height:19px;color:var(--green-800)"><circle cx="9" cy="8.6" r="3.3"/><path d="M3.3 19.5c0-3.3 2.6-5.6 5.7-5.6s5.7 2.3 5.7 5.6"/><path d="M15.7 6.1a3.3 3.3 0 0 1 0 6.4"/><path d="M18.3 14.3c2 0.6 3.4 2.4 3.4 5.2"/></svg></div><span class="tag tag-green">87 resources</span></div><div><h3 style="font-size:16.5px;">Culture & Communities</h3><p style="font-size:13.5px;color:var(--ink-muted);margin-top:6px;line-height:1.5;">Languages, traditions, and community life across the continent.</p></div><div style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--green-700);margin-top:auto;">Browse category<svg class="ic" viewBox="0 0 24 24" style="width:14px;height:14px;"><path d="M9 5l7 7-7 7"/></svg></div></div><div class="card clickable" style="padding:24px; display:flex; flex-direction:column; gap:14px;"><div style="display:flex; align-items:center; justify-content:space-between;"><div style="width:42px;height:42px;border-radius:10px;background:var(--green-100);display:flex;align-items:center;justify-content:center;"><svg class="ic" viewBox="0 0 24 24" style="width:19px;height:19px;color:var(--green-800)"><path d="M6 4h13v15.2a1 1 0 0 1-1 1H6z"/><path d="M6 4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2"/><path d="M9.5 4v16"/></svg></div><span class="tag tag-green">176 resources</span></div><div><h3 style="font-size:16.5px;">Learning Resources</h3><p style="font-size:13.5px;color:var(--ink-muted);margin-top:6px;line-height:1.5;">General reference material and skill-building guides.</p></div><div style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--green-700);margin-top:auto;">Browse category<svg class="ic" viewBox="0 0 24 24" style="width:14px;height:14px;"><path d="M9 5l7 7-7 7"/></svg></div></div></div></div></div>
+<div class="view" id="view-saved"><div style="display:flex;flex-direction:column;gap:24px;"><div><h2 class="section-title">Saved Answers</h2><p class="section-sub">Answers you’ve kept for later — available fully offline.</p></div><div style="display:flex;flex-direction:column;gap:14px;"><div class="card" style="padding:18px 22px; display:flex; align-items:center; justify-content:space-between; gap:16px;"><div><div style="font-size:14.5px; font-weight:600;">What are some important events in Liberia’s history?</div><div style="font-size:12.5px;color:var(--ink-muted);margin-top:4px;">Saved 2 days ago · Liberia History</div></div><svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px;color:var(--ink-faint);flex:none;"><path d="M9 5l7 7-7 7"/></svg></div><div class="card" style="padding:18px 22px; display:flex; align-items:center; justify-content:space-between; gap:16px;"><div><div style="font-size:14.5px; font-weight:600;">Explain entrepreneurship in simple terms.</div><div style="font-size:12.5px;color:var(--ink-muted);margin-top:4px;">Saved 5 days ago · Learning</div></div><svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px;color:var(--ink-faint);flex:none;"><path d="M9 5l7 7-7 7"/></svg></div><div class="card" style="padding:18px 22px; display:flex; align-items:center; justify-content:space-between; gap:16px;"><div><div style="font-size:14.5px; font-weight:600;">What documents do I need to register a small business?</div><div style="font-size:12.5px;color:var(--ink-muted);margin-top:4px;">Saved 1 week ago · Business & Entrepreneurship</div></div><svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px;color:var(--ink-faint);flex:none;"><path d="M9 5l7 7-7 7"/></svg></div></div></div></div>
+<div class="view" id="view-learning"><div style="display:flex;flex-direction:column;gap:24px;"><div style="display:flex; align-items:center; justify-content:space-between;"><div><h2 class="section-title">Learning Mode</h2><p class="section-sub">Simplified explanations built for first-time learners.</p></div><span class="tag tag-gold">Student Mode</span></div><div style="max-width:820px; width:100%; display:flex; flex-direction:column; gap:20px;"><div style="display:flex; justify-content:flex-end;"><div style="background:var(--green-800); color:var(--white); padding:14px 18px; border-radius:14px 14px 3px 14px; max-width:480px; font-size:14.5px; line-height:1.5;" id="learningQuestion">Explain entrepreneurship in simple terms.</div></div><div style="display:flex; gap:14px; align-items:flex-start; margin-top:20px;"><div style="width:34px;height:34px;border-radius:9px;background:var(--green-950);display:flex;align-items:center;justify-content:center;flex:none;"><svg class="ic" viewBox="0 0 24 24" style="width:15px;height:15px;color:var(--gold)"><path d="M5 3.5v17.4" stroke-width="1.6"/><path d="M5 4.5h13l-3 3.6 3 3.6H5z"/></svg></div><div class="card" style="padding:22px 26px; border-radius:4px 14px 14px 14px; flex:1;"><p style="font-size:14.5px; line-height:1.65; color:var(--ink);" id="learningMainAnswer">Entrepreneurship means starting and running your own business to solve a problem or meet a need. An entrepreneur takes on risk — using their time, skills, and money — in the hope of earning a profit by offering something valuable, like a product, a service, or a new idea.</p><div style="margin-top:16px; background:var(--gold-tint); border-radius:10px; padding:14px 18px; display:flex; align-items:center; gap:12px;"><svg class="ic" viewBox="0 0 24 24" style="width:17px;height:17px;color:var(--gold-deep); flex:none;"><circle cx="12" cy="12" r="8.4"/><circle cx="12" cy="12" r="4.6"/><circle cx="12" cy="12" r="0.9" fill="currentColor" stroke="none"/></svg><span style="font-size:13.5px; font-weight:600; color:var(--gold-deep);" id="learningKeyIdea">Key idea: Opportunity + Risk + Value = Entrepreneurship</span></div><div id="panelSimplify" style="display:none; margin-top:16px; border-top:1px solid var(--border); padding-top:16px;"><div class="tag tag-green" style="margin-bottom:10px;">Simplified</div><p style="font-size:14px; line-height:1.6; color:var(--ink);" id="learningSimplifyText">In short: an entrepreneur spots a problem, builds something to fix it, and sells it to people willing to pay for that fix.</p></div><div id="panelExample" style="display:none; margin-top:16px; border-top:1px solid var(--border); padding-top:16px;"><div class="tag tag-green" style="margin-bottom:10px;">Example</div><p style="font-size:14px; line-height:1.6; color:var(--ink);" id="learningExampleText">A tailor in Monrovia notices students need affordable school uniforms. She buys fabric in bulk, sews uniforms at home, and sells them at market — that’s entrepreneurship in action.</p></div><div id="panelQuiz" style="display:none; margin-top:16px; border-top:1px solid var(--border); padding-top:16px;"><div class="tag tag-gold" style="margin-bottom:10px;">Quick check</div><p style="font-size:14px; font-weight:600; margin-bottom:10px;" id="learningQuizQuestion">What does an entrepreneur take on in exchange for a chance at profit?</p><div style="display:flex; flex-direction:column; gap:8px; max-width:360px;"><div class="quiz-opt" id="learningOpt0">A guaranteed salary</div><div class="quiz-opt correct" id="learningOpt1">Risk, using time and money</div><div class="quiz-opt" id="learningOpt2">A government grant</div></div></div><div style="display:flex; gap:10px; margin-top:18px; flex-wrap:wrap;"><button class="btn btn-outline btn-sm" onclick="setLearningTool('simplify')"><svg class="ic" viewBox="0 0 24 24" style="width:14px;height:14px;"><path d="M9.3 18.5h5.4"/><path d="M10.2 21.2h3.6"/><path d="M12 3.3a6.2 6.2 0 0 0-3.2 11.5c0.9 0.7 1.4 1.6 1.4 2.7h3.6c0-1.1 0.5-2 1.4-2.7A6.2 6.2 0 0 0 12 3.3z"/></svg>Simplify</button><button class="btn btn-outline btn-sm" onclick="setLearningTool('example')"><svg class="ic" viewBox="0 0 24 24" style="width:14px;height:14px;"><circle cx="12" cy="12" r="9.2"/><path d="M9.2 9.4a2.9 2.9 0 0 1 5.6 0.9c0 1.9-2.5 2.1-2.5 4.1" stroke-width="1.7"/><circle cx="12.3" cy="17.3" r="0.9" fill="currentColor" stroke="none"/></svg>Give an example</button><button class="btn btn-outline btn-sm" onclick="setLearningTool('quiz')"><svg class="ic" viewBox="0 0 24 24" style="width:14px;height:14px;"><circle cx="12" cy="12" r="8.4"/><circle cx="12" cy="12" r="4.6"/><circle cx="12" cy="12" r="0.9" fill="currentColor" stroke="none"/></svg>Quiz me</button><button class="btn btn-outline btn-sm" onclick="toggleNote()"><svg class="ic" viewBox="0 0 24 24" style="width:14px;height:14px;"><path d="M6.5 3.5h8l4 4v13h-12z"/><path d="M14.5 3.5v4h4"/><path d="M9 12.5h6M9 15.8h6M9 9.2h2.5"/></svg><span id="noteLabel">Save to notes</span></button></div></div></div></div></div></div>
+<div class="view" id="view-connectivity"><div style="display:flex;flex-direction:column;gap:24px;"><div><h2 class="section-title">Built to work with or without a connection</h2><p class="section-sub">GlonoAI is offline-first, not offline-only — connectivity adds more, it never takes anything away.</p></div><div class="card" style="padding:20px 26px; display:flex; align-items:center; justify-content:space-between; gap:20px;"><div><div style="font-size:14.5px; font-weight:600;">Simulate connectivity</div><div style="font-size:12.5px; color:var(--ink-muted); margin-top:3px;">Toggle to see how GlonoAI behaves when the connection drops.</div></div><div style="display:flex; align-items:center; gap:12px;"><span class="js-status-text" style="font-size:13px; font-weight:600; color:var(--ink-muted);">Online — Syncing</span><button class="toggle-track" id="toggleTrack" onclick="toggleOnline()" style="background:var(--green-700);"><div class="toggle-knob" id="toggleKnob" style="transform:translateX(24px);"></div></button></div></div><div style="display:flex; gap:24px; align-items:stretch;"><div class="card" style="flex:1; padding:32px; display:flex; flex-direction:column; gap:20px; border-top:3px solid var(--online);"><div style="display:flex; align-items:center; gap:10px;"><div style="width:36px;height:36px;border-radius:9px;background:#EAF6EF;display:flex;align-items:center;justify-content:center;color:var(--online);"><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px;"><path d="M4.5 9.8a11 11 0 0 1 15 0"/><path d="M7.6 13.2a6.7 6.7 0 0 1 8.8 0"/><path d="M10.6 16.4a2.6 2.6 0 0 1 2.8 0"/><circle cx="12" cy="19" r="0.9" fill="currentColor" stroke="none"/></svg></div><div><div style="font-size:11.5px; font-weight:700; letter-spacing:0.05em; color:var(--online); text-transform:uppercase;">Online</div><div style="font-size:15px; font-weight:600;">Knowledge library syncing…</div></div></div><div><div style="display:flex; justify-content:space-between; font-size:12.5px; color:var(--ink-muted); margin-bottom:8px;"><span>Updating Government &amp; Public Information</span><span>72%</span></div><div style="height:8px; background:var(--green-50); border-radius:99px; overflow:hidden;"><div style="width:72%; height:100%; background:var(--online); border-radius:99px;"></div></div></div><div style="display:flex; flex-direction:column; gap:10px;"><div style="display:flex; align-items:center; gap:10px; font-size:13.5px; color:var(--ink);"><svg class="ic" viewBox="0 0 24 24" style="width:15px;height:15px;color:var(--ink-muted);"><path d="M4.5 4.5v5.5h5.5"/><path d="M19.5 19.5V14h-5.5"/><path d="M5 14.5a7.5 7.5 0 0 0 13.2 3.3M19 9.5A7.5 7.5 0 0 0 5.8 6.2" /></svg>12 new documents — Government &amp; Public Information</div><div style="display:flex; align-items:center; gap:10px; font-size:13.5px; color:var(--ink);"><svg class="ic" viewBox="0 0 24 24" style="width:15px;height:15px;color:var(--ink-muted);"><path d="M4.5 4.5v5.5h5.5"/><path d="M19.5 19.5V14h-5.5"/><path d="M5 14.5a7.5 7.5 0 0 0 13.2 3.3M19 9.5A7.5 7.5 0 0 0 5.8 6.2" /></svg>New exam-prep guides — Education</div><div style="display:flex; align-items:center; gap:10px; font-size:13.5px; color:var(--ink);"><svg class="ic" viewBox="0 0 24 24" style="width:15px;height:15px;color:var(--ink-muted);"><path d="M4.5 4.5v5.5h5.5"/><path d="M19.5 19.5V14h-5.5"/><path d="M5 14.5a7.5 7.5 0 0 0 13.2 3.3M19 9.5A7.5 7.5 0 0 0 5.8 6.2" /></svg>Updated business registration steps</div></div><p style="font-size:12.5px; color:var(--ink-muted); line-height:1.5; margin-top:auto;">When a connection is available, GlonoAI syncs new and updated knowledge in the background — without interrupting your work.</p></div><div style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; flex:none; padding-top:60px;"><div style="width:44px;height:44px;border-radius:50%;background:var(--green-950);display:flex;align-items:center;justify-content:center;"><svg class="ic" viewBox="0 0 24 24" style="width:20px;height:20px;color:var(--gold);"><path d="M9 5l7 7-7 7"/></svg></div><span style="font-size:11px; color:var(--ink-faint); text-align:center; width:80px;">connection lost</span></div><div class="card" style="flex:1; padding:32px; display:flex; flex-direction:column; gap:20px; border-top:3px solid var(--gold);"><div style="display:flex; align-items:center; gap:10px;"><div style="width:36px;height:36px;border-radius:9px;background:var(--gold-tint);display:flex;align-items:center;justify-content:center;color:var(--gold-deep);"><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px;"><path d="M2.5 4 21.5 21" stroke-width="1.9"/><path d="M4.5 9.8a11 11 0 0 1 5.6-3" /><path d="M14.2 6.9a11 11 0 0 1 5.3 2.9"/><path d="M7.6 13.2a6.7 6.7 0 0 1 3.4-1.9"/><path d="M13.7 12.2a6.7 6.7 0 0 1 3 1.4"/><path d="M10.6 16.4a2.6 2.6 0 0 1 2.8 0"/><circle cx="12" cy="19" r="0.9" fill="currentColor" stroke="none"/></svg></div><div><div style="font-size:11.5px; font-weight:700; letter-spacing:0.05em; color:var(--gold-deep); text-transform:uppercase;">Offline</div><div style="font-size:15px; font-weight:600;">GlonoAI is still available.</div></div></div><div style="display:flex; flex-direction:column; gap:12px;"><div style="display:flex; align-items:center; gap:10px; font-size:13.5px; color:var(--ink);"><div style="width:18px;height:18px;border-radius:50%;background:var(--green-100);display:flex;align-items:center;justify-content:center;flex:none;"><svg class="ic" viewBox="0 0 24 24" style="width:11px;height:11px;color:var(--green-800);"><path d="M4.5 12.5 9.5 17.5 19.5 6.5" stroke-width="2"/></svg></div>Core AI assistant</div><div style="display:flex; align-items:center; gap:10px; font-size:13.5px; color:var(--ink);"><div style="width:18px;height:18px;border-radius:50%;background:var(--green-100);display:flex;align-items:center;justify-content:center;flex:none;"><svg class="ic" viewBox="0 0 24 24" style="width:11px;height:11px;color:var(--green-800);"><path d="M4.5 12.5 9.5 17.5 19.5 6.5" stroke-width="2"/></svg></div>853 downloaded resources</div><div style="display:flex; align-items:center; gap:10px; font-size:13.5px; color:var(--ink);"><div style="width:18px;height:18px;border-radius:50%;background:var(--green-100);display:flex;align-items:center;justify-content:center;flex:none;"><svg class="ic" viewBox="0 0 24 24" style="width:11px;height:11px;color:var(--green-800);"><path d="M4.5 12.5 9.5 17.5 19.5 6.5" stroke-width="2"/></svg></div>Saved answers &amp; notes</div><div style="display:flex; align-items:center; gap:10px; font-size:13.5px; color:var(--ink);"><div style="width:18px;height:18px;border-radius:50%;background:var(--green-100);display:flex;align-items:center;justify-content:center;flex:none;"><svg class="ic" viewBox="0 0 24 24" style="width:11px;height:11px;color:var(--green-800);"><path d="M4.5 12.5 9.5 17.5 19.5 6.5" stroke-width="2"/></svg></div>Business &amp; agriculture knowledge libraries</div></div><p style="font-size:12.5px; color:var(--ink-muted); line-height:1.5; margin-top:auto;">No internet needed to keep learning, teaching, or working — everything downloaded stays fully available.</p></div></div></div></div>
+<div class="view" id="view-admin"><div style="display:flex;flex-direction:column;gap:24px;"><div class="card" style="padding:26px 28px; display:flex; align-items:center; justify-content:space-between; gap:20px;">
+<div style="display:flex; align-items:center; gap:16px;">
+<div class="avatar" style="width:52px;height:52px;font-size:16px;" id="settingsAvatar">JA</div>
+<div>
+<div style="font-size:16.5px; font-weight:700; font-family:'Space Grotesk',sans-serif;" id="settingsName">&mdash;</div>
+<div style="display:flex; align-items:center; gap:8px; margin-top:5px;">
+<span class="role-badge" id="settingsRoleBadge" style="background:var(--green-100); color:var(--green-800); border-color:var(--border);">Business</span>
+<span style="font-size:12.5px; color:var(--ink-muted);" id="settingsOrgName">&nbsp;</span>
+</div>
+</div>
+</div>
+<div style="display:flex; gap:10px;">
+<button class="btn btn-outline btn-sm" onclick="switchRole()"><svg class="ic" viewBox="0 0 24 24" style="width:14px;height:14px;"><path d="M4.5 4.5v5.5h5.5"/><path d="M19.5 19.5V14h-5.5"/><path d="M5 14.5a7.5 7.5 0 0 0 13.2 3.3M19 9.5A7.5 7.5 0 0 0 5.8 6.2"/></svg>Switch account type</button>
+<button class="btn btn-ghost btn-sm" onclick="logout()"><svg class="ic" viewBox="0 0 24 24" style="width:14px;height:14px;"><path d="M9 6.5V4.5h9v15h-9v-2"/><path d="M3.5 12h10.5"/><path d="M11 8.7l3.3 3.3-3.3 3.3"/></svg>Log out</button>
+</div>
+</div>
+<div style="display:flex; align-items:center; justify-content:space-between;"><div><h2 class="section-title">Admin Dashboard</h2><p class="section-sub">Monitor and manage the local knowledge base.</p></div><div style="display:flex; gap:12px;"><button class="btn btn-primary"><svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px;color:var(--gold)"><path d="M12 15.5V4.5"/><path d="M7.2 9.2 12 4.5l4.8 4.7"/><path d="M4.5 19.5h15"/></svg>Upload Knowledge</button><button class="btn btn-outline" onclick="simulateSync()"><svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px;"><path d="M4.5 4.5v5.5h5.5"/><path d="M19.5 19.5V14h-5.5"/><path d="M5 14.5a7.5 7.5 0 0 0 13.2 3.3M19 9.5A7.5 7.5 0 0 0 5.8 6.2" /></svg>Update Knowledge Base</button></div></div><div style="display:grid; grid-template-columns:repeat(3,1fr); gap:20px;"><div class="card" style="padding:22px;"><div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;"><div style="width:32px;height:32px;border-radius:8px;background:var(--green-100);display:flex;align-items:center;justify-content:center;color:var(--green-800);"><svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px;"><ellipse cx="12" cy="5.6" rx="7.5" ry="2.6"/><path d="M4.5 5.6V18.4c0 1.4 3.4 2.6 7.5 2.6s7.5-1.2 7.5-2.6V5.6"/><path d="M4.5 12c0 1.4 3.4 2.6 7.5 2.6s7.5-1.2 7.5-2.6"/></svg></div><span style="font-size:12.5px; font-weight:600; color:var(--ink-muted);">Knowledge base size</span></div><div style="font-size:27px; font-weight:700; font-family:'Space Grotesk',sans-serif;">2.4 GB</div><div style="font-size:12px; color:var(--ink-faint); margin-top:4px;">1,340 documents indexed</div></div><div class="card" style="padding:22px;"><div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;"><div style="width:32px;height:32px;border-radius:8px;background:var(--green-100);display:flex;align-items:center;justify-content:center;color:var(--green-800);"><svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px;"><path d="M12 15.5V4.5"/><path d="M7.2 9.2 12 4.5l4.8 4.7"/><path d="M4.5 19.5h15"/></svg></div><span style="font-size:12.5px; font-weight:600; color:var(--ink-muted);">Documents uploaded</span></div><div style="font-size:27px; font-weight:700; font-family:'Space Grotesk',sans-serif;">47</div><div style="font-size:12px; color:var(--ink-faint); margin-top:4px;">in the last 30 days</div></div><div class="card" style="padding:22px;"><div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;"><div style="width:32px;height:32px;border-radius:8px;background:var(--green-100);display:flex;align-items:center;justify-content:center;color:var(--green-800);"><svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px;"><circle cx="12" cy="12" r="9.2"/><path d="M12 6.8V12l3.6 2.1"/></svg></div><span style="font-size:12.5px; font-weight:600; color:var(--ink-muted);">Last synchronization</span></div><div style="font-size:27px; font-weight:700; font-family:'Space Grotesk',sans-serif;"><span id="lastSyncValue">2 hrs ago</span></div><div style="font-size:12px; color:var(--ink-faint); margin-top:4px;"><span id="lastSyncSub">Government &amp; Public Info</span></div></div><div class="card" style="padding:22px;"><div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;"><div style="width:32px;height:32px;border-radius:8px;background:var(--green-100);display:flex;align-items:center;justify-content:center;color:var(--green-800);"><svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px;"><circle cx="9" cy="8.6" r="3.3"/><path d="M3.3 19.5c0-3.3 2.6-5.6 5.7-5.6s5.7 2.3 5.7 5.6"/><path d="M15.7 6.1a3.3 3.3 0 0 1 0 6.4"/><path d="M18.3 14.3c2 0.6 3.4 2.4 3.4 5.2"/></svg></div><span style="font-size:12.5px; font-weight:600; color:var(--ink-muted);">Active users</span></div><div style="font-size:27px; font-weight:700; font-family:'Space Grotesk',sans-serif;">312</div><div style="font-size:12px; color:var(--ink-faint); margin-top:4px;">this week</div></div><div class="card" style="padding:22px;"><div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;"><div style="width:32px;height:32px;border-radius:8px;background:var(--green-100);display:flex;align-items:center;justify-content:center;color:var(--green-800);"><svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px;"><path d="M4 5.5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H10l-4.5 4v-4H4a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1z"/><path d="M8 10h8M8 13.5h5" stroke-width="1.5"/></svg></div><span style="font-size:12.5px; font-weight:600; color:var(--ink-muted);">Questions asked</span></div><div style="font-size:27px; font-weight:700; font-family:'Space Grotesk',sans-serif;">4,208</div><div style="font-size:12px; color:var(--ink-faint); margin-top:4px;">this month</div></div><div class="card" style="padding:24px; grid-column:span 2;"><div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;"><div style="width:32px;height:32px;border-radius:8px;background:var(--gold-tint);display:flex;align-items:center;justify-content:center;color:var(--gold-deep);"><svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px;"><path d="M5 20V13"/><path d="M12 20V8.5"/><path d="M19 20v-6.5"/></svg></div><span style="font-size:12.5px; font-weight:600; color:var(--ink-muted);">Most requested topics</span></div><div style="display:flex; flex-direction:column; gap:14px;"><div style="display:flex; align-items:center; gap:14px;"><span style="font-size:13px; color:var(--ink-muted); width:170px; flex:none;">Liberian History</span><div style="flex:1; height:8px; background:var(--green-50); border-radius:99px; overflow:hidden;"><div style="width:92%; height:100%; background:var(--green-700); border-radius:99px;"></div></div><span style="font-size:12.5px; color:var(--ink-faint); width:30px; text-align:right;">92%</span></div><div style="display:flex; align-items:center; gap:14px;"><span style="font-size:13px; color:var(--ink-muted); width:170px; flex:none;">Entrepreneurship basics</span><div style="flex:1; height:8px; background:var(--green-50); border-radius:99px; overflow:hidden;"><div style="width:81%; height:100%; background:var(--green-700); border-radius:99px;"></div></div><span style="font-size:12.5px; color:var(--ink-faint); width:30px; text-align:right;">81%</span></div><div style="display:flex; align-items:center; gap:14px;"><span style="font-size:13px; color:var(--ink-muted); width:170px; flex:none;">Government services</span><div style="flex:1; height:8px; background:var(--green-50); border-radius:99px; overflow:hidden;"><div style="width:64%; height:100%; background:var(--green-700); border-radius:99px;"></div></div><span style="font-size:12.5px; color:var(--ink-faint); width:30px; text-align:right;">64%</span></div><div style="display:flex; align-items:center; gap:14px;"><span style="font-size:13px; color:var(--ink-muted); width:170px; flex:none;">Exam preparation</span><div style="flex:1; height:8px; background:var(--green-50); border-radius:99px; overflow:hidden;"><div style="width:58%; height:100%; background:var(--green-700); border-radius:99px;"></div></div><span style="font-size:12.5px; color:var(--ink-faint); width:30px; text-align:right;">58%</span></div><div style="display:flex; align-items:center; gap:14px;"><span style="font-size:13px; color:var(--ink-muted); width:170px; flex:none;">Health &amp; safety training</span><div style="flex:1; height:8px; background:var(--green-50); border-radius:99px; overflow:hidden;"><div style="width:41%; height:100%; background:var(--green-700); border-radius:99px;"></div></div><span style="font-size:12.5px; color:var(--ink-faint); width:30px; text-align:right;">41%</span></div></div></div></div></div></div>
+</div>
+</div>
+</div>
+
+<script>
+var QA_DB = [{"id": "liberia-history", "keywords": ["liberia history", "liberia's history", "history of liberia", "founding of liberia", "1847", "1822", "independence", "americo-liberian"], "question": "What are some important events in Liberia’s history?", "suggested": true, "category": "Liberia History & Heritage", "html": "<p>Here are some of the most important events in Liberia’s history, from its founding to its modern democratic era:</p><div style=\"margin-top:14px; display:flex; flex-direction:column;\"><div style=\"display:flex; gap:14px;\"><div style=\"width:64px; flex:none; font-size:12.5px; font-weight:700; color:var(--gold-deep); padding-top:1px;\">1822</div><div style=\"flex:1; font-size:14px; line-height:1.55; color:var(--ink); padding-bottom:14px; border-bottom:1px solid var(--border);\">Founded as a settlement for freed African Americans and Afro-Caribbeans by the American Colonization Society.</div></div><div style=\"display:flex; gap:14px;\"><div style=\"width:64px; flex:none; font-size:12.5px; font-weight:700; color:var(--gold-deep); padding-top:1px;\">1847</div><div style=\"flex:1; font-size:14px; line-height:1.55; color:var(--ink); padding-bottom:14px; border-bottom:1px solid var(--border);\">Declared independence on July 26, becoming Africa’s first modern republic.</div></div><div style=\"display:flex; gap:14px;\"><div style=\"width:64px; flex:none; font-size:12.5px; font-weight:700; color:var(--gold-deep); padding-top:1px;\">1847–1980</div><div style=\"flex:1; font-size:14px; line-height:1.55; color:var(--ink); padding-bottom:14px; border-bottom:1px solid var(--border);\">Governed largely by Americo-Liberian settlers, who shaped politics for over a century.</div></div><div style=\"display:flex; gap:14px;\"><div style=\"width:64px; flex:none; font-size:12.5px; font-weight:700; color:var(--gold-deep); padding-top:1px;\">1980</div><div style=\"flex:1; font-size:14px; line-height:1.55; color:var(--ink); padding-bottom:14px; border-bottom:1px solid var(--border);\">A coup led by Master Sergeant Samuel Doe ended Americo-Liberian political rule.</div></div><div style=\"display:flex; gap:14px;\"><div style=\"width:64px; flex:none; font-size:12.5px; font-weight:700; color:var(--gold-deep); padding-top:1px;\">1989–2003</div><div style=\"flex:1; font-size:14px; line-height:1.55; color:var(--ink); padding-bottom:14px; border-bottom:1px solid var(--border);\">Two civil wars caused widespread devastation before a lasting peace agreement was signed.</div></div><div style=\"display:flex; gap:14px;\"><div style=\"width:64px; flex:none; font-size:12.5px; font-weight:700; color:var(--gold-deep); padding-top:1px;\">2006</div><div style=\"flex:1; font-size:14px; line-height:1.55; color:var(--ink); padding-bottom:14px; border-bottom:1px solid var(--border);\">Ellen Johnson Sirleaf is inaugurated as Africa’s first elected female head of state.</div></div></div>", "sources": ["Liberia: A Concise National History", "GlonoAI Liberia Knowledge Base — Timeline Archive", "Civic Education Curriculum, Ministry of Education (offline copy)"]}, {"id": "liberia-first-president", "keywords": ["first president", "joseph jenkins roberts"], "question": "Who was Liberia’s first president?", "suggested": false, "category": "Liberia History & Heritage", "html": "<p>Joseph Jenkins Roberts was inaugurated in 1848 as Liberia’s first president, serving as one of the key founding leaders of the republic.</p>", "sources": ["Liberia: A Concise National History"]}, {"id": "register-business", "keywords": ["register a business", "register my business", "business registration", "start a business in liberia", "llc"], "question": "What documents do I need to register a small business?", "suggested": true, "category": "Business & Entrepreneurship", "html": "<p>To register a small business in Liberia, you’ll typically need to:</p><ul style=\"margin:10px 0 0 0; padding-left:18px; font-size:14px; line-height:1.7; color:var(--ink);\"><li>Reserve and register your business name with the Liberia Business Registry (LBR)</li><li>Obtain a Taxpayer Identification Number (TIN) from the Liberia Revenue Authority</li><li>Register for any sector-specific permits (health, food, import/export, etc.)</li><li>Register with the National Social Security and Welfare Corporation (NASSCORP) once you hire staff</li></ul>", "sources": ["Liberia Business Registry — Startup Guide", "Ministry of Commerce & Industry FAQ (offline copy)"], "roles": ["business"]}, {"id": "entrepreneurship", "keywords": ["entrepreneurship", "entrepreneur", "what is entrepreneurship"], "question": "Explain entrepreneurship in simple terms.", "suggested": false, "category": "Education", "html": "<p>Entrepreneurship means starting and running your own business to solve a problem or meet a need. An entrepreneur takes on risk — using their time, skills, and money — in the hope of earning a profit by offering something valuable, like a product, a service, or a new idea. Try Learning Mode for a simplified version, an example, and a quick quiz.</p>", "sources": ["GlonoAI Education Library — Business Basics"], "roles": ["business"]}, {"id": "ecowas", "keywords": ["ecowas", "economic community of west african states", "west african bloc", "regional bloc"], "question": "What is ECOWAS and why does it matter?", "suggested": true, "category": "Government & Public Information", "html": "<p>ECOWAS (the Economic Community of West African States) is a regional bloc of West African nations, founded in 1975 to promote trade, free movement of people, and economic integration across the sub-region. It also plays a role in regional peace and security efforts. Membership and priorities have shifted in recent years, so treat exact member counts as something to verify against a current source.</p>", "sources": ["ECOWAS Overview — Regional Affairs Briefing", "GlonoAI Government & Public Information Library"]}, {"id": "african-union", "keywords": ["african union", "au headquarters", "organisation of african unity", "oau"], "question": "What is the African Union?", "suggested": false, "category": "Government & Public Information", "html": "<p>The African Union (AU) is the continental body representing African nations, headquartered in Addis Ababa, Ethiopia. It was established in 2002 as the successor to the Organisation of African Unity (founded in 1963), with a mandate to promote unity, peace, and development across the continent’s member states.</p>", "sources": ["African Union — Continental Bodies Explainer"]}, {"id": "ghana", "keywords": ["ghana"], "question": "What is Ghana known for?", "suggested": false, "category": "Culture & Communities", "html": "<p>Ghana, on West Africa’s coast, was the first sub-Saharan African nation to gain independence from colonial rule, in 1957, under Kwame Nkrumah. It’s one of the world’s largest producers of cocoa and gold, and its capital, Accra, is a major regional hub for trade and culture.</p>", "sources": ["West Africa Country Profiles — Ghana"]}, {"id": "nigeria", "keywords": ["nigeria"], "question": "Tell me about Nigeria.", "suggested": false, "category": "Culture & Communities", "html": "<p>Nigeria is Africa’s most populous nation, with Abuja as its capital and Lagos as its commercial and cultural hub. It’s a major oil producer and home to Nollywood, one of the largest film industries in the world by volume of output.</p>", "sources": ["West Africa Country Profiles — Nigeria"]}, {"id": "kenya-mobile-money", "keywords": ["kenya", "m-pesa", "mpesa", "mobile money"], "question": "Tell me about Kenya and mobile money.", "suggested": true, "category": "Business & Entrepreneurship", "html": "<p>Kenya, in East Africa, is often called the “Silicon Savannah” for its fast-growing tech sector, centered on the capital, Nairobi. It pioneered mobile money with M-Pesa, launched in 2007 — letting people send and receive money on basic phones without a bank account. The model has since spread across much of the continent and reshaped financial inclusion for millions of people.</p>", "sources": ["East Africa Country Profiles — Kenya", "Fintech & Mobile Money in Africa"], "roles": ["business"]}, {"id": "south-africa", "keywords": ["south africa", "apartheid", "nelson mandela"], "question": "Tell me about South Africa’s history.", "suggested": false, "category": "Culture & Communities", "html": "<p>South Africa ended apartheid — its system of racial segregation — in 1994, when Nelson Mandela became the country’s first democratically elected president. It’s the most industrialized economy on the continent and has three capital cities: Pretoria (administrative), Cape Town (legislative), and Bloemfontein (judicial).</p>", "sources": ["Southern Africa Country Profiles — South Africa"]}, {"id": "ethiopia", "keywords": ["ethiopia", "addis ababa", "coffee origin"], "question": "What makes Ethiopia unique?", "suggested": false, "category": "Culture & Communities", "html": "<p>Ethiopia is one of the few African nations never formally colonized, apart from a brief Italian occupation (1936–41). Its capital, Addis Ababa, hosts the African Union’s headquarters, and the country is widely considered the birthplace of coffee.</p>", "sources": ["East Africa Country Profiles — Ethiopia"]}, {"id": "agriculture", "keywords": ["agriculture", "farming", "cocoa", "rubber", "palm oil", "value chain"], "question": "How important is agriculture in Africa?", "suggested": false, "category": "Agriculture & Farming", "html": "<p>Agriculture employs a large share of the workforce across Africa and anchors many national economies. Côte d’Ivoire and Ghana together produce a majority of the world’s cocoa; Ethiopia is coffee’s birthplace; and Liberia’s own economy has long depended on rubber and, more recently, palm oil.</p>", "sources": ["Agriculture & Trade Library — Regional Value Chains"], "roles": ["agriculture"]}, {"id": "languages", "keywords": ["languages", "how many languages", "official language", "languages spoken"], "question": "How many languages are spoken in Africa?", "suggested": false, "category": "Culture & Communities", "html": "<p>Africa is home to well over 2,000 languages. Swahili serves as a lingua franca across much of East Africa; Hausa, Yoruba, and Igbo are widely spoken in Nigeria; and Liberia itself has around 16 recognized indigenous ethnic groups alongside English, its official language.</p>", "sources": ["Culture & Communities Library — Languages of Africa"]}, {"id": "exam-prep", "keywords": ["exam", "study tips", "past papers", "wassce", "exam preparation"], "question": "Do you have exam preparation resources?", "suggested": false, "category": "Education", "html": "<p>Yes — the Education library includes study guides and past exam material you can browse offline. Open Knowledge Library → Education, or try Learning Mode for a guided walkthrough of a topic.</p>", "sources": ["GlonoAI Education Library — Exam Preparation"]}, {"id": "biz-create-invoice", "keywords": ["invoice", "create an invoice", "bill a customer", "how do i invoice", "make an invoice"], "question": "How do I create an invoice for a customer?", "suggested": true, "category": "Business & Entrepreneurship", "roles": ["business"], "html": "<p>A simple invoice should include: your business name, the customer’s name, a clear description of the item or service, the amount, the date, and your preferred payment method. You can create one right now under <b>My Business → Invoices</b> — GlonoAI will keep track of what’s paid and what’s still outstanding.</p>", "sources": ["GlonoAI Business Library — Invoicing Basics"]}, {"id": "biz-financing", "keywords": ["loan", "financing", "microfinance", "small business loan", "credit", "borrow money"], "question": "What financing or loan options exist for small businesses in Liberia?", "suggested": true, "category": "Business & Entrepreneurship", "roles": ["business"], "html": "<p>Common options for small businesses in Liberia include:</p><ul style=\"margin:10px 0 0 0; padding-left:18px; font-size:14px; line-height:1.7; color:var(--ink);\"><li>Microfinance institutions offering small working-capital loans</li><li>Savings and credit cooperatives, including informal susu/ROSCA-style savings groups</li><li>Mobile-money-linked microloans through providers like Orange Money or MTN Mobile Money</li></ul><p style=\"margin-top:10px;\">Always compare interest rates and repayment terms before borrowing.</p>", "sources": ["GlonoAI Business Library — Access to Finance"]}, {"id": "biz-pricing", "keywords": ["pricing", "how to price", "set a price", "cost-plus", "price my product"], "question": "How can I price my products or services?", "suggested": false, "category": "Business & Entrepreneurship", "roles": ["business"], "html": "<p>A simple starting method is cost-plus pricing: add up your full cost (materials, transport, your time), then add a margin on top for profit. Compare that number against what competitors charge nearby, and adjust based on demand — you can always fine-tune the price as you learn what customers are willing to pay.</p>", "sources": ["GlonoAI Business Library — Pricing Basics"]}, {"id": "biz-records", "keywords": ["bookkeeping", "records", "what records", "track expenses", "business records"], "question": "What records should I keep for my business?", "suggested": false, "category": "Business & Entrepreneurship", "roles": ["business"], "html": "<p>At minimum, keep a running log of: sales (what you sold and for how much), expenses (what you spent and on what), invoices and receipts, and basic inventory if you sell physical goods. GlonoAI’s <b>My Business</b> tools can track your sales and invoices for you automatically.</p>", "sources": ["GlonoAI Business Library — Recordkeeping"]}, {"id": "biz-mobile-money", "keywords": ["mobile money", "orange money", "mtn mobile money", "accept payment", "digital payment"], "question": "How do I accept mobile money payments from customers?", "suggested": false, "category": "Business & Entrepreneurship", "roles": ["business"], "html": "<p>In Liberia, most businesses accept mobile money through Orange Money or MTN Mobile Money by registering as a merchant or agent, or simply by receiving transfers to a personal mobile money account. Always confirm a payment has actually arrived before handing over goods, and keep a note of each transaction alongside your sales log.</p>", "sources": ["GlonoAI Business Library — Digital Payments"]}, {"id": "ag-rice-planting", "keywords": ["plant rice", "when to plant rice", "rice planting season", "rice season"], "question": "When is the best time to plant rice in Liberia?", "suggested": true, "category": "Agriculture & Farming", "roles": ["agriculture"], "html": "<p>Most rice in Liberia is planted at the start of the rainy season, roughly April to June, after land is cleared and prepared during the dry season. Exact timing varies between upland and lowland (swamp) rice, and by region — use the Crop Calendar in <b>My Farm</b> as a general guide, and confirm with local extension advice where possible.</p>", "sources": ["GlonoAI Agriculture Library — Rice Production Basics"]}, {"id": "ag-pest-control", "keywords": ["pest control", "pests", "without chemicals", "organic pest control", "insects eating crops"], "question": "How do I control pests without expensive chemicals?", "suggested": true, "category": "Agriculture & Farming", "roles": ["agriculture"], "html": "<p>Several low-cost approaches can help:</p><ul style=\"margin:10px 0 0 0; padding-left:18px; font-size:14px; line-height:1.7; color:var(--ink);\"><li>Rotate crops each season so pests can’t build up in the soil</li><li>Plant pest-repelling crops (like pepper or onion) alongside main crops</li><li>Use neem leaf or seed extract as a natural spray</li><li>Remove and destroy visibly infested plants promptly</li></ul>", "sources": ["GlonoAI Agriculture Library — Integrated Pest Management"]}, {"id": "ag-soil-health", "keywords": ["soil health", "improve soil", "fertilizer", "compost", "manure", "soil fertility"], "question": "How can I improve my soil without commercial fertilizer?", "suggested": false, "category": "Agriculture & Farming", "roles": ["agriculture"], "html": "<p>Build soil fertility naturally by composting crop waste and kitchen scraps, applying animal manure, planting cover crops between seasons, and rotating crops rather than repeating the same one. Avoid burning crop residue where possible — working it back into the soil returns nutrients instead of losing them.</p>", "sources": ["GlonoAI Agriculture Library — Soil Management"]}, {"id": "ag-market-sell", "keywords": ["sell harvest", "where to sell", "better price", "cooperative", "sell my crops"], "question": "Where can I sell my harvest for a better price?", "suggested": false, "category": "Agriculture & Farming", "roles": ["agriculture"], "html": "<p>Beyond your local market, consider selling through a farmer cooperative or aggregator — pooling produce with other farmers often gets a better price than selling alone. Check the Market Prices tab in <b>My Farm</b> before you sell, so you have a sense of a fair price to expect.</p>", "sources": ["GlonoAI Agriculture Library — Market Access"]}, {"id": "ag-storage", "keywords": ["storage", "store rice", "store cassava", "reduce losses", "post-harvest"], "question": "How do I store rice or cassava after harvest to reduce losses?", "suggested": false, "category": "Agriculture & Farming", "roles": ["agriculture"], "html": "<p>Dry rice thoroughly before storing it in a raised, well-ventilated, pest-proof container or bag — damp grain spoils quickly. Cassava is more perishable and is best processed soon after harvest (for example into gari or farina) rather than stored raw for long periods.</p>", "sources": ["GlonoAI Agriculture Library — Post-Harvest Handling"]}, {"id": "ag-farmer-support", "keywords": ["farmer loan", "support programs", "agriculture loan", "cooperative support", "farming grant"], "question": "Are there loans or support programs for farmers in Liberia?", "suggested": false, "category": "Agriculture & Farming", "roles": ["agriculture"], "html": "<p>Support for farmers typically comes through agricultural cooperatives, microfinance institutions offering seasonal loans, and NGO or government extension programs. Joining a local farmer group can also make it easier to access shared equipment, training, and better market prices.</p>", "sources": ["GlonoAI Agriculture Library — Farmer Support Programs"]}];
+
+var state = {
+  authed: false,
+  authMode: 'login',
+  role: 'business',
+  userName: '',
+  orgName: '',
+  view: 'home',
+  messages: [],
+  learningTool: null,
+  savedNote: false,
+  online: true,
+  justSynced: false,
+  bizSales: [],
+  bizInvoices: [],
+  bizInvoiceSeq: 1,
+  bizTab: 'sales',
+  farmLog: [],
+  farmTab: 'log',
+};
+
+var CRUMBS = {
+  home: ['Home', '· Overview'],
+  chat: ['Ask GlonoAI', '· New conversation'],
+  bizTools: ['My Business', '· Sales, invoices & overview'],
+  farmTools: ['My Farm', '· Farm records & market prices'],
+  library: ['Knowledge Library', '· 759 resources stored locally'],
+  saved: ['Saved Answers', '· Kept for later'],
+  learning: ['Learning', '· Student mode'],
+  connectivity: ['Connectivity', '· Offline-first, not offline-only'],
+  admin: ['Settings', '· Account & admin dashboard'],
+};
+
+var FALLBACK_HTML = "<p>GlonoAI answers using only what’s stored on this device, and that exact topic isn’t in the local library yet. Try asking about Liberian history, business &amp; entrepreneurship, agriculture &amp; farming, government services, education, or other African countries and regional bodies like ECOWAS and the African Union — or add new resources any time from the Knowledge Library.</p>";
+
+var LEARNING_TOPICS = {
+  business: {
+    question: 'Explain entrepreneurship in simple terms.',
+    main: 'Entrepreneurship means starting and running your own business to solve a problem or meet a need. An entrepreneur takes on risk — using their time, skills, and money — in the hope of earning a profit by offering something valuable, like a product, a service, or a new idea.',
+    key: 'Key idea: Opportunity + Risk + Value = Entrepreneurship',
+    simplify: 'In short: an entrepreneur spots a problem, builds something to fix it, and sells it to people willing to pay for that fix.',
+    example: 'A tailor in Monrovia notices students need affordable school uniforms. She buys fabric in bulk, sews uniforms at home, and sells them at market — that’s entrepreneurship in action.',
+    quiz: { q: 'What does an entrepreneur take on in exchange for a chance at profit?', opts: ['A guaranteed salary', 'Risk, using time and money', 'A government grant'], correct: 1 }
+  },
+  agriculture: {
+    question: 'Explain crop rotation in simple terms.',
+    main: 'Crop rotation means growing a different type of crop in the same field each season instead of planting the same one repeatedly. It helps keep soil healthy, breaks pest and disease cycles, and can improve how much you harvest over time.',
+    key: 'Key idea: Different Crops + Each Season = Healthier Soil',
+    simplify: 'In short: don’t plant the same crop in the same spot every season — switching it up keeps the soil, and your harvest, stronger.',
+    example: 'A farmer plants cassava in a field one season, then switches to groundnuts the next season before returning to cassava — the groundnuts help restore nutrients the cassava used up.',
+    quiz: { q: 'What is one main benefit of rotating crops each season?', opts: ['A guaranteed higher price', 'Healthier soil and fewer pests', 'No need to weed'], correct: 1 }
+  }
+};
+
+var ICON_CASH = '<svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px;"><rect x="3" y="6.5" width="18" height="11" rx="2"/><circle cx="12" cy="12" r="2.6"/></svg>';
+var ICON_INVOICE = '<svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px;"><path d="M6.5 3.5h11a1 1 0 0 1 1 1V21l-2.5-2-2.5 2-2.5-2-2.5 2-2.5-2V4.5a1 1 0 0 1 1-1z"/></svg>';
+var ICON_DOC = '<svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px;"><path d="M7 3.5h7l4 4v13H7z"/><path d="M14 3.5v4h4"/></svg>';
+var ICON_CROP = '<svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px;"><path d="M12 3.5c3 3 4.5 6 4.5 8.7A4.5 4.5 0 0 1 12 17a4.5 4.5 0 0 1-4.5-4.8C7.5 9.5 9 6.5 12 3.5z"/><path d="M12 17v4.2"/></svg>';
+var ICON_PRICE = '<svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px;"><path d="M5 20V13"/><path d="M12 20V8.5"/><path d="M19 20v-6.5"/></svg>';
+var ICON_LOG = '<svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px;"><path d="M4 6h16M4 12h16M4 18h10"/></svg>';
+
+function escapeHtml(s) {
+  var d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function fmtMoney(n) {
+  n = Math.round((n + 0.00001) * 100) / 100;
+  return '$' + n.toFixed(2);
+}
+
+function fmtDate(d) {
+  var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  return months[d.getMonth()] + ' ' + d.getDate();
+}
+
+function matchAnswer(text) {
+  var lower = text.toLowerCase();
+  var best = null, bestScore = 0;
+  QA_DB.forEach(function (entry) {
+    var score = 0;
+    entry.keywords.forEach(function (kw) { if (lower.indexOf(kw) !== -1) score += kw.length; });
+    if (score > bestScore) { bestScore = score; best = entry; }
+  });
+  return best;
+}
+
+/* ---------------- auth ---------------- */
+
+function selectRole(role) {
+  state.role = role;
+  document.getElementById('roleCardBusiness').classList.toggle('selected', role === 'business');
+  document.getElementById('roleCardAgriculture').classList.toggle('selected', role === 'agriculture');
+  document.getElementById('signupOrgLabel').textContent = role === 'business' ? 'Business Name' : 'Farm Name';
+  document.getElementById('authOrgName').placeholder = role === 'business' ? "e.g. Sarah's Provision Shop" : "e.g. Freeman Family Farm";
+}
+
+function setAuthMode(mode) {
+  state.authMode = mode;
+  document.getElementById('authTabLogin').classList.toggle('active', mode === 'login');
+  document.getElementById('authTabSignup').classList.toggle('active', mode === 'signup');
+  document.getElementById('signupOrgField').style.display = mode === 'signup' ? 'block' : 'none';
+  document.getElementById('authSubmitLabel').textContent = mode === 'signup' ? 'Create Account' : 'Log In';
+  var line = document.getElementById('authSwitchLine');
+  if (mode === 'signup') {
+    line.innerHTML = 'Already have an account? <button onclick="setAuthMode(\'login\')">Log in</button>';
+  } else {
+    line.innerHTML = 'New to GlonoAI? <button onclick="setAuthMode(\'signup\')">Create an account</button>';
+  }
+  document.getElementById('authError').style.display = 'none';
+}
+
+function submitAuth() {
+  var name = (document.getElementById('authName').value || '').trim();
+  var phone = (document.getElementById('authPhone').value || '').trim();
+  var password = document.getElementById('authPassword').value || '';
+  var org = (document.getElementById('authOrgName').value || '').trim();
+  var errEl = document.getElementById('authError');
+
+  if (!name || !phone || !password) {
+    errEl.textContent = 'Please fill in your name, phone number, and password to continue.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  state.userName = name;
+  state.orgName = org || (state.role === 'business' ? 'My Business' : 'My Farm');
+  state.authed = true;
+  state.view = 'home';
+  render();
+}
+
+function logout() {
+  state.authed = false;
+  var pw = document.getElementById('authPassword');
+  if (pw) pw.value = '';
+  render();
+}
+
+function switchRole() {
+  state.role = state.role === 'business' ? 'agriculture' : 'business';
+  render();
+}
+
+/* ---------------- nav ---------------- */
+
+function goTo(view) { state.view = view; render(); }
+function goToBizTab(tab) { state.view = 'bizTools'; state.bizTab = tab; render(); }
+function goToFarmTab(tab) { state.view = 'farmTools'; state.farmTab = tab; render(); }
+function setBizTab(tab) { state.bizTab = tab; render(); }
+function setFarmTab(tab) { state.farmTab = tab; render(); }
+
+/* ---------------- chat ---------------- */
+
+function submitSuggested(id) {
+  var entry = QA_DB.filter(function (e) { return e.id === id; })[0];
+  if (entry) submitText(entry.question, entry);
+}
+
+function openSuggested(id) {
+  state.view = 'chat';
+  submitSuggested(id);
+}
+
+function submitTyped() {
+  var field = document.getElementById('chatInputField');
+  var text = (field.value || '').trim();
+  if (!text) return;
+  field.value = '';
+  submitText(text);
+}
+
+function submitText(text, knownEntry) {
+  var entry = knownEntry || matchAnswer(text);
+  state.messages.push({ role: 'user', text: text });
+  if (entry) {
+    state.messages.push({ role: 'ai', html: entry.html, sources: entry.sources, saved: false, copied: false, sourcesOpen: false });
+  } else {
+    state.messages.push({ role: 'ai', html: FALLBACK_HTML, sources: null, saved: false, copied: false, sourcesOpen: false });
+  }
+  render();
+  var thread = document.getElementById('chatThread');
+  if (thread) thread.scrollTop = thread.scrollHeight;
+}
+
+function resetChat() { state.messages = []; render(); }
+
+function toggleMsgSave(i) { state.messages[i].saved = !state.messages[i].saved; render(); }
+function toggleMsgCopy(i) { state.messages[i].copied = !state.messages[i].copied; render(); }
+function toggleMsgSources(i) { state.messages[i].sourcesOpen = !state.messages[i].sourcesOpen; render(); }
+
+function setLearningTool(t) { state.learningTool = (state.learningTool === t) ? null : t; render(); }
+function toggleNote() { state.savedNote = !state.savedNote; render(); }
+function toggleOnline() { state.online = !state.online; render(); }
+function simulateSync() { state.justSynced = true; render(); }
+
+function aiIcon() {
+  return '<div style="width:34px;height:34px;border-radius:9px;background:var(--green-950);display:flex;align-items:center;justify-content:center;flex:none;">' +
+    '<svg class="ic" viewBox="0 0 24 24" style="width:15px;height:15px;color:var(--gold)"><path d="M5 3.5v17.4" stroke-width="1.6"/><path d="M5 4.5h13l-3 3.6 3 3.6H5z"/></svg></div>';
+}
+
+function renderChatThread() {
+  var el = document.getElementById('chatThread');
+  if (!el) return;
+  var html = '';
+  state.messages.forEach(function (m, i) {
+    if (m.role === 'user') {
+      html += '<div style="display:flex; justify-content:flex-end;">' +
+        '<div style="background:var(--green-800); color:var(--white); padding:14px 18px; border-radius:14px 14px 3px 14px; max-width:520px; font-size:14.5px; line-height:1.5;">' +
+        escapeHtml(m.text) + '</div></div>';
+    } else {
+      var sourcesBtn = '', sourcesPanel = '', sourcesLine = '';
+      if (m.sources) {
+        sourcesBtn = '<button class="btn btn-ghost btn-sm" onclick="toggleMsgSources(' + i + ')">' +
+          '<svg class="ic" viewBox="0 0 24 24" style="width:14px;height:14px;"><path d="M9.8 14.2 14.2 9.8"/><path d="M11 8.3l1.6-1.6a3.1 3.1 0 0 1 4.4 4.4L15.4 12.7"/><path d="M13 15.7l-1.6 1.6a3.1 3.1 0 0 1-4.4-4.4l1.6-1.6"/></svg>' +
+          (m.sourcesOpen ? 'Hide sources' : 'View sources') + '</button>';
+        if (m.sourcesOpen) {
+          sourcesPanel = '<div style="margin-top:12px; background:var(--green-50); border:1px solid var(--border); border-radius:10px; padding:12px 14px; display:flex; flex-direction:column; gap:8px;">' +
+            m.sources.map(function (s) {
+              return '<div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink);"><svg class="ic" viewBox="0 0 24 24" style="width:13px;height:13px;color:var(--ink-muted);"><path d="M7 3.5h7l4 4v13H7z"/><path d="M14 3.5v4h4"/></svg>' + escapeHtml(s) + '</div>';
+            }).join('') + '</div>';
+        }
+        sourcesLine = '<div style="display:flex; align-items:center; gap:7px; margin-top:12px; font-size:12.5px; color:var(--ink-muted);"><svg class="ic" viewBox="0 0 24 24" style="width:14px;height:14px;"><path d="M9.8 14.2 14.2 9.8"/><path d="M11 8.3l1.6-1.6a3.1 3.1 0 0 1 4.4 4.4L15.4 12.7"/><path d="M13 15.7l-1.6 1.6a3.1 3.1 0 0 1-4.4-4.4l1.6-1.6"/></svg>Sources: ' + escapeHtml(m.sources[0]) + '</div>';
+      }
+      html += '<div style="display:flex; gap:14px; align-items:flex-start;">' + aiIcon() +
+        '<div class="card" style="padding:20px 24px; border-radius:4px 14px 14px 14px; flex:1;">' +
+        '<div style="font-size:14.5px; line-height:1.6; color:var(--ink);">' + m.html + '</div>' +
+        sourcesPanel + sourcesLine +
+        '<div style="display:flex; gap:10px; margin-top:16px; flex-wrap:wrap;">' +
+        '<button class="btn btn-ghost btn-sm" onclick="toggleMsgSave(' + i + ')"><svg class="ic" viewBox="0 0 24 24" style="width:14px;height:14px;"><path d="M6.5 3.5h11a1 1 0 0 1 1 1V21l-6.5-4.3L5.5 21V4.5a1 1 0 0 1 1-1z"/></svg>' + (m.saved ? '✓ Saved' : 'Save') + '</button>' +
+        '<button class="btn btn-ghost btn-sm" onclick="toggleMsgCopy(' + i + ')"><svg class="ic" viewBox="0 0 24 24" style="width:14px;height:14px;"><rect x="4.5" y="4.5" width="11.5" height="11.5" rx="2"/><rect x="8.3" y="8.3" width="11.2" height="11.2" rx="2" fill="var(--white)"/></svg>' + (m.copied ? '✓ Copied' : 'Copy') + '</button>' +
+        (m.sources ? sourcesBtn : '') +
+        '</div></div></div>';
+    }
+  });
+  el.innerHTML = html;
+}
+
+/* ---------------- shared render helpers ---------------- */
+
+function statCard(label, value, sub, iconSvg) {
+  return '<div class="card" style="padding:22px;"><div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">' +
+    '<div style="width:32px;height:32px;border-radius:8px;background:var(--green-100);display:flex;align-items:center;justify-content:center;color:var(--green-800);">' + iconSvg + '</div>' +
+    '<span style="font-size:12.5px; font-weight:600; color:var(--ink-muted);">' + label + '</span></div>' +
+    '<div style="font-size:27px; font-weight:700; font-family:\'Space Grotesk\',sans-serif;">' + value + '</div>' +
+    '<div style="font-size:12px; color:var(--ink-faint); margin-top:4px;">' + sub + '</div></div>';
+}
+
+function rowItem(iconSvg, title, sub, amountText) {
+  return '<div class="row-item"><div class="ric">' + iconSvg + '</div><div style="flex:1;"><div class="row-title">' + title + '</div><div class="row-sub">' + sub + '</div></div>' +
+    (amountText ? '<div class="row-amt">' + amountText + '</div>' : '') + '</div>';
+}
+
+function emptyState(iconSvg, text) {
+  return '<div class="empty-state"><div class="eic">' + iconSvg + '</div><p>' + text + '</p></div>';
+}
+
+function chipsHtml(entries) {
+  var html = '';
+  entries.forEach(function (e) {
+    html += '<div class="chip clickable" onclick="openSuggested(\'' + e.id + '\')"><svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px;color:var(--green-700);flex:none;"><path d="M4 5.5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H10l-4.5 4v-4H4a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1z"/></svg>“' + escapeHtml(e.question) + '”</div>';
+  });
+  return html;
+}
+
+function getRoleEntries(role, count) {
+  var roleMatch = QA_DB.filter(function (e) { return e.roles && e.roles.indexOf(role) !== -1; });
+  var rest = QA_DB.filter(function (e) { return !(e.roles && e.roles.indexOf(role) !== -1) && e.suggested; });
+  return roleMatch.concat(rest).slice(0, count);
+}
+
+function showTabPanel(tabPrefix, panelPrefix, names, active) {
+  names.forEach(function (n) {
+    var tabEl = document.getElementById(tabPrefix + n);
+    if (tabEl) tabEl.classList.toggle('active', n === active);
+    var panelEl = document.getElementById(panelPrefix + n);
+    if (panelEl) panelEl.style.display = (n === active) ? 'flex' : 'none';
+  });
+}
+
+/* ---------------- business tools ---------------- */
+
+function addSale() {
+  var itemEl = document.getElementById('saleItem');
+  var amtEl = document.getElementById('saleAmount');
+  var item = (itemEl.value || '').trim();
+  var amt = parseFloat(amtEl.value);
+  if (!item || !amt || amt <= 0) return;
+  state.bizSales.unshift({ item: item, amount: amt, date: new Date() });
+  itemEl.value = ''; amtEl.value = '';
+  render();
+}
+
+function addInvoice() {
+  var custEl = document.getElementById('invCustomer');
+  var itemEl = document.getElementById('invItem');
+  var amtEl = document.getElementById('invAmount');
+  var cust = (custEl.value || '').trim();
+  var item = (itemEl.value || '').trim();
+  var amt = parseFloat(amtEl.value);
+  if (!cust || !item || !amt || amt <= 0) return;
+  var num = 'INV-' + ('0000' + state.bizInvoiceSeq).slice(-4);
+  state.bizInvoiceSeq++;
+  state.bizInvoices.unshift({ number: num, customer: cust, item: item, amount: amt, date: new Date(), paid: false });
+  custEl.value = ''; itemEl.value = ''; amtEl.value = '';
+  render();
+}
+
+function toggleInvoicePaid(idx) {
+  state.bizInvoices[idx].paid = !state.bizInvoices[idx].paid;
+  render();
+}
+
+function renderBizStats() {
+  var totalSales = state.bizSales.reduce(function (s, x) { return s + x.amount; }, 0);
+  var paidInvoiceTotal = state.bizInvoices.filter(function (i) { return i.paid; }).reduce(function (s, x) { return s + x.amount; }, 0);
+  var unpaidCount = state.bizInvoices.filter(function (i) { return !i.paid; }).length;
+  var outstanding = state.bizInvoices.filter(function (i) { return !i.paid; }).reduce(function (s, x) { return s + x.amount; }, 0);
+  var revenue = totalSales + paidInvoiceTotal;
+  var txCount = state.bizSales.length + state.bizInvoices.filter(function (i) { return i.paid; }).length;
+  var html =
+    statCard('Total Revenue', fmtMoney(revenue), txCount + (txCount === 1 ? ' recorded transaction' : ' recorded transactions'), ICON_CASH) +
+    statCard('Outstanding Invoices', fmtMoney(outstanding), unpaidCount + (unpaidCount === 1 ? ' unpaid invoice' : ' unpaid invoices'), ICON_INVOICE) +
+    statCard('Invoices Sent', String(state.bizInvoices.length), 'all time', ICON_DOC);
+  var el1 = document.getElementById('bizStatRow');
+  if (el1) el1.innerHTML = html;
+  var el2 = document.getElementById('bizOverviewStatRow');
+  if (el2) el2.innerHTML = html;
+}
+
+function renderBizRecent() {
+  var items = [];
+  state.bizSales.forEach(function (s) { items.push({ type: 'sale', date: s.date, title: 'Sale: ' + escapeHtml(s.item), amount: s.amount }); });
+  state.bizInvoices.forEach(function (i) { items.push({ type: 'invoice', date: i.date, title: 'Invoice ' + i.number + ' — ' + escapeHtml(i.customer), amount: i.amount, paid: i.paid }); });
+  items.sort(function (a, b) { return b.date - a.date; });
+  var top = items.slice(0, 5);
+  var html = '';
+  if (!top.length) {
+    html = emptyState(ICON_CASH, 'No sales or invoices yet — log a sale or create an invoice to see it here.');
+  } else {
+    top.forEach(function (it) {
+      var sub = fmtDate(it.date) + (it.type === 'invoice' ? (it.paid ? ' · Paid' : ' · Unpaid') : ' · Sale');
+      html += rowItem(it.type === 'sale' ? ICON_CASH : ICON_INVOICE, it.title, sub, fmtMoney(it.amount));
+    });
+  }
+  var el1 = document.getElementById('bizRecentList');
+  if (el1) el1.innerHTML = html;
+  var el2 = document.getElementById('bizOverviewList');
+  if (el2) el2.innerHTML = html;
+}
+
+function renderBizSalesList() {
+  var el = document.getElementById('bizSalesList');
+  if (!el) return;
+  if (!state.bizSales.length) { el.innerHTML = emptyState(ICON_CASH, 'No sales logged yet. Add your first sale above.'); return; }
+  var html = '';
+  state.bizSales.forEach(function (s) { html += rowItem(ICON_CASH, escapeHtml(s.item), fmtDate(s.date), fmtMoney(s.amount)); });
+  el.innerHTML = html;
+}
+
+function renderBizInvoicesList() {
+  var el = document.getElementById('bizInvoicesList');
+  if (!el) return;
+  if (!state.bizInvoices.length) { el.innerHTML = emptyState(ICON_INVOICE, 'No invoices yet. Create your first invoice above.'); return; }
+  var html = '';
+  state.bizInvoices.forEach(function (inv, idx) {
+    html += '<div class="card" style="padding:18px 22px; display:flex; align-items:center; justify-content:space-between; gap:16px;">' +
+      '<div><div style="font-size:11.5px; font-weight:700; letter-spacing:0.04em; color:var(--ink-faint); text-transform:uppercase;">' + inv.number + ' · ' + fmtDate(inv.date) + '</div>' +
+      '<div style="font-size:14.5px; font-weight:600; margin-top:4px;">' + escapeHtml(inv.customer) + '</div>' +
+      '<div style="font-size:13px; color:var(--ink-muted); margin-top:2px;">' + escapeHtml(inv.item) + '</div></div>' +
+      '<div style="display:flex; align-items:center; gap:14px;"><div style="font-size:16px; font-weight:700; font-family:\'Space Grotesk\',sans-serif;">' + fmtMoney(inv.amount) + '</div>' +
+      '<span class="tag ' + (inv.paid ? 'tag-green' : 'tag-gold') + '">' + (inv.paid ? 'Paid' : 'Unpaid') + '</span>' +
+      '<button class="btn btn-outline btn-sm" onclick="toggleInvoicePaid(' + idx + ')">' + (inv.paid ? 'Mark Unpaid' : 'Mark Paid') + '</button></div></div>';
+  });
+  el.innerHTML = html;
+}
+
+/* ---------------- farm tools ---------------- */
+
+function addFarmLog() {
+  var crop = document.getElementById('farmCrop').value;
+  var activity = document.getElementById('farmActivity').value;
+  var noteEl = document.getElementById('farmNote');
+  var note = (noteEl.value || '').trim();
+  state.farmLog.unshift({ crop: crop, activity: activity, note: note, date: new Date() });
+  noteEl.value = '';
+  render();
+}
+
+function renderFarmStats() {
+  var cropsSet = {};
+  state.farmLog.forEach(function (e) { cropsSet[e.crop] = true; });
+  var cropsCount = Object.keys(cropsSet).length;
+  var harvestCount = state.farmLog.filter(function (e) { return e.activity === 'Harvested'; }).length;
+  var html =
+    statCard('Farm Log Entries', String(state.farmLog.length), 'recorded activities', ICON_LOG) +
+    statCard('Crops Tracked', String(cropsCount), cropsCount === 1 ? 'crop type' : 'crop types', ICON_CROP) +
+    statCard('Harvest Entries', String(harvestCount), 'logged so far', ICON_PRICE);
+  var el = document.getElementById('farmStatRow');
+  if (el) el.innerHTML = html;
+}
+
+function renderFarmLogList() {
+  var el = document.getElementById('farmLogList');
+  if (!el) return;
+  if (!state.farmLog.length) { el.innerHTML = emptyState(ICON_CROP, 'No farm activity logged yet. Add your first entry above.'); return; }
+  var html = '';
+  state.farmLog.forEach(function (e) {
+    var sub = fmtDate(e.date) + (e.note ? ' · ' + escapeHtml(e.note) : '');
+    html += rowItem(ICON_CROP, e.crop + ' — ' + e.activity, sub, null);
+  });
+  el.innerHTML = html;
+}
+
+function renderFarmRecent() {
+  var el = document.getElementById('farmRecentList');
+  if (!el) return;
+  if (!state.farmLog.length) { el.innerHTML = emptyState(ICON_CROP, 'No farm activity yet — log planting, weeding, or harvest to see it here.'); return; }
+  var html = '';
+  state.farmLog.slice(0, 5).forEach(function (e) {
+    var sub = fmtDate(e.date) + (e.note ? ' · ' + escapeHtml(e.note) : '');
+    html += rowItem(ICON_CROP, e.crop + ' — ' + e.activity, sub, null);
+  });
+  el.innerHTML = html;
+}
+
+/* ---------------- suggestions / learning / library ---------------- */
+
+function renderSuggestions() {
+  var chipsEl = document.getElementById('chatSuggestChips');
+  if (chipsEl) chipsEl.innerHTML = chipsHtml(getRoleEntries(state.role, 4));
+  var bizEl = document.getElementById('bizSuggestList');
+  if (bizEl) bizEl.innerHTML = chipsHtml(getRoleEntries('business', 3));
+  var farmEl = document.getElementById('farmSuggestList');
+  if (farmEl) farmEl.innerHTML = chipsHtml(getRoleEntries('agriculture', 3));
+}
+
+function renderLearning() {
+  var t = LEARNING_TOPICS[state.role] || LEARNING_TOPICS.business;
+  var q = document.getElementById('learningQuestion'); if (q) q.textContent = t.question;
+  var m = document.getElementById('learningMainAnswer'); if (m) m.textContent = t.main;
+  var k = document.getElementById('learningKeyIdea'); if (k) k.textContent = t.key;
+  var s = document.getElementById('learningSimplifyText'); if (s) s.textContent = t.simplify;
+  var ex = document.getElementById('learningExampleText'); if (ex) ex.textContent = t.example;
+  var qq = document.getElementById('learningQuizQuestion'); if (qq) qq.textContent = t.quiz.q;
+  for (var i = 0; i < 3; i++) {
+    var optEl = document.getElementById('learningOpt' + i);
+    if (!optEl) continue;
+    optEl.textContent = t.quiz.opts[i];
+    optEl.classList.toggle('correct', i === t.quiz.correct);
+  }
+}
+
+function renderLibraryBanner() {
+  var el = document.getElementById('libRecommendedText');
+  if (!el) return;
+  el.innerHTML = 'Recommended for you: <b>' + (state.role === 'business' ? 'Business & Entrepreneurship' : 'Agriculture & Farming') + '</b>';
+}
+
+/* ---------------- main render ---------------- */
+
+function render() {
+  var authScreen = document.getElementById('authScreen');
+  var appShell = document.getElementById('appShell');
+  authScreen.style.display = state.authed ? 'none' : 'flex';
+  appShell.style.display = state.authed ? 'flex' : 'none';
+  if (!state.authed) { return; }
+
+  document.querySelectorAll('.view').forEach(function (v) { v.classList.remove('active'); });
+  var current = document.getElementById('view-' + state.view);
+  if (current) current.classList.add('active');
+
+  document.querySelectorAll('.nav-item').forEach(function (el) {
+    var roleOk = !el.dataset.role || el.dataset.role === state.role;
+    el.style.display = roleOk ? 'flex' : 'none';
+    if (el.dataset.nav === state.view) {
+      el.style.background = 'var(--green-800)';
+      el.style.color = 'var(--white)';
+      el.style.boxShadow = 'inset 2px 0 0 var(--gold)';
+    } else {
+      el.style.background = 'transparent';
+      el.style.color = '#B9C7BE';
+      el.style.boxShadow = 'none';
+    }
+  });
+
+  var crumb = CRUMBS[state.view] || CRUMBS.home;
+  document.getElementById('crumbBold').textContent = crumb[0];
+  document.getElementById('crumbRest').textContent = crumb[1];
+
+  var statusText = state.online ? 'Online — Syncing' : 'Offline — Ready to Assist';
+  document.querySelectorAll('.js-status-text').forEach(function (el) { el.textContent = statusText; });
+  document.getElementById('sidebarStatus').textContent = state.online ? 'Online — Syncing' : 'Offline — Ready';
+
+  var hasMessages = state.messages.length > 0;
+  document.getElementById('chatPrompt').style.display = hasMessages ? 'none' : 'flex';
+  document.getElementById('chatAnswer').style.display = hasMessages ? 'flex' : 'none';
+  if (hasMessages) renderChatThread();
+
+  document.getElementById('panelSimplify').style.display = state.learningTool === 'simplify' ? 'block' : 'none';
+  document.getElementById('panelExample').style.display = state.learningTool === 'example' ? 'block' : 'none';
+  document.getElementById('panelQuiz').style.display = state.learningTool === 'quiz' ? 'block' : 'none';
+  document.getElementById('noteLabel').textContent = state.savedNote ? '✓ Saved' : 'Save to notes';
+
+  document.getElementById('toggleTrack').style.background = state.online ? 'var(--green-700)' : 'var(--gold)';
+  document.getElementById('toggleKnob').style.transform = state.online ? 'translateX(24px)' : 'translateX(0px)';
+
+  document.getElementById('lastSyncValue').textContent = state.justSynced ? 'Just now' : '2 hrs ago';
+  document.getElementById('lastSyncSub').textContent = state.justSynced ? 'All categories up to date' : 'Government & Public Info';
+
+  var initials = (state.userName || '').trim().split(/\s+/).filter(Boolean).map(function (w) { return w[0]; }).slice(0, 2).join('').toUpperCase() || '—';
+  document.getElementById('topbarAvatar').textContent = initials;
+  document.getElementById('settingsAvatar').textContent = initials;
+  document.getElementById('homeGreetingName').textContent = state.userName || 'there';
+  document.getElementById('settingsName').textContent = state.userName || '—';
+  var roleLabel = state.role === 'business' ? 'Business' : 'Agriculture';
+  document.getElementById('homeRoleBadge').textContent = roleLabel;
+  document.getElementById('sidebarRoleBadge').textContent = roleLabel;
+  document.getElementById('settingsRoleBadge').textContent = roleLabel;
+  document.getElementById('sidebarOrgName').textContent = state.orgName || '';
+  document.getElementById('settingsOrgName').textContent = state.orgName || '';
+
+  document.getElementById('dashBusiness').style.display = state.role === 'business' ? 'flex' : 'none';
+  document.getElementById('dashAgriculture').style.display = state.role === 'agriculture' ? 'flex' : 'none';
+
+  renderBizStats();
+  renderBizRecent();
+  renderBizSalesList();
+  renderBizInvoicesList();
+  renderFarmStats();
+  renderFarmRecent();
+  renderFarmLogList();
+  renderSuggestions();
+  renderLearning();
+  renderLibraryBanner();
+
+  showTabPanel('bizTab-', 'bizPanel-', ['sales', 'invoices', 'overview'], state.bizTab);
+  showTabPanel('farmTab-', 'farmPanel-', ['log', 'prices', 'calendar'], state.farmTab);
+}
+
+render();
+
+</script>
+
+</body>
+</html>
